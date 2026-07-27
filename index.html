@@ -2142,6 +2142,359 @@
       #classHudBadge { top: 164px; left: 10px; }
     }
 
+
+
+    /* Mobile full-screen interface overhaul */
+    @media (max-width: 820px), (pointer: coarse) {
+      html, body {
+        width: 100%;
+        min-height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+
+      #overlay {
+        display: block;
+        padding: 0;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(69,243,255,.09), transparent 34%),
+          linear-gradient(180deg, rgba(4,7,20,.98), rgba(15,7,28,.99));
+        backdrop-filter: none;
+        overflow: hidden;
+      }
+
+      #menu,
+      #menu.shop-mode {
+        box-sizing: border-box;
+        width: 100dvw;
+        height: 100dvh;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        padding:
+          max(18px, env(safe-area-inset-top))
+          max(16px, env(safe-area-inset-right))
+          max(18px, env(safe-area-inset-bottom))
+          max(16px, env(safe-area-inset-left));
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background:
+          radial-gradient(circle at 15% 10%, rgba(69,243,255,.08), transparent 30%),
+          radial-gradient(circle at 85% 12%, rgba(255,79,216,.08), transparent 28%),
+          linear-gradient(165deg, #0a1028, #160a25 72%, #070b19);
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #startPanel,
+      #pausePanel,
+      #victoryPanel,
+      #secretVictoryPanel,
+      #secretDefeatPanel,
+      #upgradePanel {
+        min-height: calc(100dvh - max(36px, env(safe-area-inset-top)) - max(36px, env(safe-area-inset-bottom)));
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-width: 620px;
+        margin: 0 auto;
+      }
+
+      #startPanel h1 {
+        font-size: clamp(48px, 16vw, 78px);
+        margin-top: auto;
+      }
+
+      .subtitle {
+        margin: 12px auto 16px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .instructions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+        margin: 12px 0 16px;
+      }
+
+      .instruction {
+        padding: 10px 6px;
+        min-width: 0;
+        font-size: 10px;
+      }
+
+      .instruction b {
+        font-size: 13px;
+        margin-bottom: 3px;
+      }
+
+      .menu-actions,
+      .pause-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 9px;
+        max-width: 520px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .menu-actions button,
+      .pause-actions button,
+      #startPanel button {
+        width: 100%;
+        min-height: 50px;
+        font-size: 14px;
+        border-radius: 14px;
+      }
+
+      #lastResult { margin-bottom: auto; }
+
+      #menu.shop-mode #cosmeticsPanel,
+      #menu.shop-mode #collectablesPanel,
+      #menu.shop-mode #skillTreePanel,
+      #menu.shop-mode #classSelectPanel,
+      #cosmeticsPanel,
+      #collectablesPanel,
+      #skillTreePanel,
+      #classSelectPanel {
+        height: calc(100dvh - max(36px, env(safe-area-inset-top)) - max(36px, env(safe-area-inset-bottom)));
+        min-height: 0;
+      }
+
+      .shop-shell,
+      .collectables-shell,
+      .tree-shell,
+      .class-shell {
+        height: 100%;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .shop-topbar,
+      .tree-header,
+      .class-header {
+        position: sticky;
+        top: 0;
+        z-index: 4;
+        padding: 4px 0 12px;
+        margin-bottom: 10px;
+        background: linear-gradient(180deg, rgba(10,16,40,.98) 72%, transparent);
+        border-bottom: 0;
+        align-items: flex-start;
+      }
+
+      .shop-title-wrap h2,
+      .tree-header h2,
+      .class-header h2 {
+        font-size: clamp(26px, 8vw, 36px);
+      }
+
+      .shop-tagline,
+      .tree-header p,
+      .class-header p { font-size: 12px; }
+
+      .shop-balance-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .featured-card { display: none; }
+      .coin-display { padding: 11px 13px; }
+
+      #menu.shop-mode .shop-sections,
+      .shop-sections,
+      .tree-body,
+      .class-body {
+        padding: 0 0 90px;
+        overflow-y: auto;
+        min-height: 0;
+      }
+
+      .cosmetic-grid,
+      .upgrade-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .cosmetic-card {
+        grid-template-columns: 46px minmax(0, 1fr);
+        min-height: 0;
+        padding: 10px;
+      }
+
+      .cosmetic-preview { width: 46px; height: 46px; }
+      .cosmetic-card h4 { font-size: 14px; }
+      .cosmetic-card p { font-size: 11px; }
+
+      .shop-footer,
+      .tree-footer,
+      .class-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px 0 0;
+        background: linear-gradient(0deg, rgba(10,16,40,.99) 72%, transparent);
+        border-top: 0;
+      }
+
+      .tree-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .tree-canvas-wrap {
+        min-height: 380px;
+        height: 48dvh;
+      }
+
+      .tree-canvas { min-width: 690px; }
+      .tree-info-panel { max-height: none; }
+
+      .class-body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .class-grid {
+        grid-template-columns: 1fr;
+        overflow: visible;
+      }
+
+      .class-detail { min-height: auto; }
+      .class-mode-pill { display: none; }
+
+      /* Compact in-game HUD */
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 5px;
+        padding:
+          max(7px, env(safe-area-inset-top))
+          58px
+          0
+          max(7px, env(safe-area-inset-left));
+      }
+
+      .stat-group {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
+        width: 100%;
+      }
+
+      .card {
+        min-width: 0;
+        padding: 5px 7px;
+        border-radius: 10px;
+        background: rgba(10,15,35,.64);
+        box-shadow: none;
+      }
+
+      .card .label { font-size: 7px; }
+      .value { font-size: 15px; }
+
+      .bars {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+      }
+
+      .bars > div .label { display: none; }
+      .bar-shell { height: 8px; }
+
+      #pauseGameBtn {
+        top: max(7px, env(safe-area-inset-top));
+        right: max(7px, env(safe-area-inset-right));
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+      }
+
+      #bossHud {
+        top: calc(max(70px, env(safe-area-inset-top) + 62px));
+        width: calc(100vw - 20px);
+      }
+
+      #eventBanner {
+        top: calc(max(115px, env(safe-area-inset-top) + 106px));
+        max-width: calc(100vw - 20px);
+        font-size: 12px;
+      }
+
+      #classBadge {
+        display: none;
+      }
+
+      #mobileControls {
+        padding:
+          6px max(12px, env(safe-area-inset-right))
+          max(8px, env(safe-area-inset-bottom))
+          max(12px, env(safe-area-inset-left));
+      }
+
+      .joystick-zone {
+        width: clamp(112px, 29vw, 142px);
+        height: clamp(112px, 29vw, 142px);
+      }
+
+      .mobile-btn {
+        width: clamp(68px, 18vw, 86px);
+        height: clamp(68px, 18vw, 86px);
+      }
+
+      #liveUpgradePanel {
+        left: 8px;
+        right: 8px;
+        width: auto;
+        bottom: calc(clamp(122px, 31vw, 152px) + max(10px, env(safe-area-inset-bottom)));
+        max-height: 28dvh;
+      }
+    }
+
+    @media (pointer: coarse) and (orientation: landscape) {
+      #menu,
+      #menu.shop-mode {
+        padding:
+          max(10px, env(safe-area-inset-top))
+          max(16px, env(safe-area-inset-right))
+          max(10px, env(safe-area-inset-bottom))
+          max(16px, env(safe-area-inset-left));
+      }
+
+      #startPanel {
+        min-height: calc(100dvh - 20px);
+        max-width: 760px;
+      }
+
+      #startPanel h1 { font-size: clamp(40px, 10vw, 66px); }
+      .subtitle { margin: 7px auto 9px; font-size: 12px; }
+      .instructions { margin: 7px 0 9px; }
+      .menu-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .menu-actions button { min-height: 42px; }
+
+      .topbar {
+        grid-template-columns: minmax(250px, .8fr) minmax(220px, .7fr);
+        padding-right: 58px;
+        align-items: center;
+      }
+
+      .bars { grid-template-columns: 1fr; }
+      .joystick-zone { width: min(25vh, 124px); height: min(25vh, 124px); }
+      .mobile-btn { width: min(18vh, 78px); height: min(18vh, 78px); }
+      #liveUpgradePanel { bottom: calc(min(27vh, 134px) + 8px); }
+    }
+
 </style>
 </head>
 <body>
