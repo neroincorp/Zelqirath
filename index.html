@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Zelqirath</title>
   <style>
     :root {
@@ -392,31 +392,119 @@
     .upgrade h3 { margin: 0 0 8px; color: var(--cyan); }
     .upgrade p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
 
+
     #mobileControls {
       position: fixed;
-      inset: auto 0 14px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 25;
       display: none;
       justify-content: space-between;
-      padding: 0 18px;
+      align-items: flex-end;
+      padding:
+        12px max(16px, env(safe-area-inset-right))
+        max(14px, env(safe-area-inset-bottom))
+        max(16px, env(safe-area-inset-left));
       pointer-events: none;
+    }
+
+    .joystick-zone {
+      width: clamp(126px, 34vw, 174px);
+      height: clamp(126px, 34vw, 174px);
+      position: relative;
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    .joystick-base {
+      position: absolute;
+      inset: 7%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,.12), rgba(15,21,49,.78) 55%, rgba(4,8,24,.88));
+      border: 2px solid rgba(69,243,255,.28);
+      box-shadow:
+        inset 0 0 32px rgba(69,243,255,.08),
+        0 12px 34px rgba(0,0,0,.42),
+        0 0 22px rgba(69,243,255,.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .joystick-base::before,
+    .joystick-base::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,.055);
+      pointer-events: none;
+    }
+
+    .joystick-base::before { width: 72%; height: 1px; }
+    .joystick-base::after { width: 1px; height: 72%; }
+
+    .joystick-stick {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 48%;
+      height: 48%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: clamp(20px, 5vw, 28px);
+      color: white;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.24), rgba(69,243,255,.2) 35%, rgba(20,25,55,.96));
+      border: 2px solid rgba(255,255,255,.24);
+      box-shadow: 0 8px 24px rgba(0,0,0,.45), 0 0 24px rgba(69,243,255,.16);
+      will-change: transform;
+      pointer-events: none;
+    }
+
+    .mobile-actions {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      pointer-events: auto;
+      padding-bottom: 8px;
     }
 
     .mobile-btn {
       pointer-events: auto;
-      width: 70px;
-      height: 70px;
+      width: clamp(76px, 20vw, 98px);
+      height: clamp(76px, 20vw, 98px);
       border-radius: 50%;
       padding: 0;
       display: grid;
       place-items: center;
       color: white;
-      background: rgba(20,25,55,.72);
-      border: 1px solid rgba(255,255,255,.18);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 8px 30px rgba(0,0,0,.35);
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.18), rgba(20,25,55,.86) 58%);
+      border: 2px solid rgba(255,255,255,.2);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.42), 0 0 20px rgba(255,79,216,.10);
+      font-size: clamp(26px, 7vw, 34px);
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .move-cluster { display: flex; gap: 10px; }
+    .mobile-btn.active,
+    .mobile-btn:active {
+      transform: scale(.92);
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.25), rgba(255,79,216,.36) 55%, rgba(20,25,55,.92));
+      border-color: rgba(255,255,255,.42);
+    }
+
+    .dash-label {
+      position: absolute;
+      bottom: -18px;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.72);
+    }
 
 
     .menu-actions {
@@ -816,12 +904,83 @@
       .cosmetic-card { grid-template-columns: 50px 1fr; gap: 10px; }
       .cosmetic-preview { width: 50px; height: 50px; }
       .cosmetic-meta { align-items: flex-start; flex-direction: column; }
-      #menu { max-height: 90vh; overflow-y: auto; }
+      #menu {
+        width: min(94vw, 680px);
+        max-height: calc(100dvh - max(20px, env(safe-area-inset-top)) - max(20px, env(safe-area-inset-bottom)));
+        overflow-y: auto;
+        padding: 18px 14px;
+        border-radius: 20px;
+      }
+      #menu h1 { font-size: clamp(40px, 13vw, 64px); }
       #mobileControls { display: flex; }
-      #liveUpgradePanel { bottom: 96px; right: 10px; width: calc(100vw - 20px); }
-      .bars { width: 42vw; }
-      .card { min-width: 75px; padding: 7px 9px; }
-      .value { font-size: 17px; }
+      #liveUpgradePanel {
+        bottom: calc(clamp(145px, 38vw, 190px) + max(20px, env(safe-area-inset-bottom)));
+        right: 8px;
+        width: calc(100vw - 16px);
+        max-height: 34vh;
+        overflow: auto;
+      }
+      .topbar {
+        padding:
+          max(8px, env(safe-area-inset-top))
+          max(8px, env(safe-area-inset-right))
+          8px
+          max(8px, env(safe-area-inset-left));
+        gap: 6px;
+      }
+      .stat-group { gap: 5px; flex-wrap: nowrap; }
+      .bars { width: min(38vw, 180px); gap: 5px; }
+      .bar-shell { height: 12px; }
+      .card { min-width: 0; padding: 6px 8px; border-radius: 11px; }
+      .card .label { font-size: 8px; }
+      .value { font-size: clamp(14px, 4vw, 18px); }
+      #pauseGameBtn {
+        top: max(8px, env(safe-area-inset-top));
+        right: max(8px, env(safe-area-inset-right));
+        width: 42px;
+        height: 42px;
+      }
+      #classBadge {
+        left: max(8px, env(safe-area-inset-left));
+        bottom: calc(clamp(150px, 37vw, 188px) + max(8px, env(safe-area-inset-bottom)));
+        transform: scale(.88);
+        transform-origin: left bottom;
+      }
+      #bossHud {
+        top: calc(max(66px, env(safe-area-inset-top) + 58px));
+        width: min(88vw, 560px);
+      }
+      #eventBanner { top: calc(max(116px, env(safe-area-inset-top) + 108px)); }
+    }
+
+    @media (pointer: coarse) and (orientation: landscape) {
+      #mobileControls {
+        padding-top: 6px;
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+      }
+      .joystick-zone {
+        width: min(29vh, 150px);
+        height: min(29vh, 150px);
+      }
+      .mobile-btn {
+        width: min(21vh, 88px);
+        height: min(21vh, 88px);
+      }
+      #liveUpgradePanel {
+        bottom: calc(min(31vh, 158px) + max(10px, env(safe-area-inset-bottom)));
+        max-height: 42vh;
+      }
+      #menu { max-height: 92dvh; }
+      .topbar { padding-top: max(6px, env(safe-area-inset-top)); }
+      .card { padding: 5px 7px; }
+      .value { font-size: 15px; }
+    }
+
+    @media (pointer: coarse) and (max-height: 520px) {
+      .joystick-zone { width: 118px; height: 118px; }
+      .mobile-btn { width: 72px; height: 72px; }
+      #mobileControls { padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+      #classBadge { display: none; }
     }
 
     #debugMenu {
@@ -2021,7 +2180,7 @@
         <h1>ZELQIRATH</h1>
         <p class="subtitle">Grab energy orbs, chain huge combos, dodge hunters, and choose a power-up every level. The arena keeps getting faster.</p>
         <div class="instructions">
-          <div class="instruction"><b>WASD / Arrows</b>Move</div>
+          <div class="instruction"><b>WASD / Joystick</b>Move</div>
           <div class="instruction"><b>Space</b>Dash through danger</div>
           <div class="instruction"><b>Collect</b>Build your multiplier</div>
         </div>
@@ -2424,14 +2583,14 @@
     </div>
   </div>
 
-  <div id="mobileControls">
-    <div class="move-cluster">
-      <button class="mobile-btn" data-key="ArrowLeft">◀</button>
-      <button class="mobile-btn" data-key="ArrowRight">▶</button>
+  <div id="mobileControls" aria-label="Mobile game controls">
+    <div class="joystick-zone" id="joystickZone" aria-label="Movement joystick">
+      <div class="joystick-base">
+        <div class="joystick-stick" id="joystickStick">✦</div>
+      </div>
     </div>
-    <div class="move-cluster">
-      <button class="mobile-btn" data-key="ArrowUp">▲</button>
-      <button class="mobile-btn" data-key="Space">⚡</button>
+    <div class="mobile-actions">
+      <button class="mobile-btn" id="mobileDashBtn" data-key="Space" aria-label="Dash">⚡<span class="dash-label">Dash</span></button>
     </div>
   </div>
 
@@ -2446,6 +2605,9 @@
   const comboEl = document.getElementById("combo");
   const hpFill = document.getElementById("hpFill");
   const dashFill = document.getElementById("dashFill");
+  const joystickZone = document.getElementById("joystickZone");
+  const joystickStick = document.getElementById("joystickStick");
+  const mobileDashBtn = document.getElementById("mobileDashBtn");
   const overlay = document.getElementById("overlay");
   const menu = document.getElementById("menu");
   const pausePanel = document.getElementById("pausePanel");
@@ -2571,6 +2733,10 @@
   let audioCtx = null;
 
   const keys = {};
+  const touchMove = { x: 0, y: 0, active: false, pointerId: null };
+  let joystickCenterX = 0;
+  let joystickCenterY = 0;
+  let joystickRadius = 1;
   const debugMenu = document.getElementById("debugMenu");
   const debugClose = document.getElementById("debugClose");
   const debugDragHandle = document.getElementById("debugDragHandle");
@@ -3590,7 +3756,7 @@
     },
     {
       icon: "⌨", title: "Move Around",
-      text: "Use WASD or the arrow keys to move. On mobile, use the on-screen buttons.",
+      text: "Use WASD, the arrow keys, or the mobile joystick to move. On mobile, use the on-screen buttons.",
       demo: `<div class="tutorial-keys"><span class="tutorial-key">W</span><span class="tutorial-key">A</span><span class="tutorial-key">S</span><span class="tutorial-key">D</span><span class="tutorial-key">↑</span><span class="tutorial-key">←</span><span class="tutorial-key">↓</span><span class="tutorial-key">→</span></div>`
     },
     {
@@ -3637,15 +3803,23 @@
 
   function resize() {
     dpr = Math.min(devicePixelRatio || 1, 2);
-    W = innerWidth;
-    H = innerHeight;
+    const viewport = window.visualViewport;
+    W = Math.max(1, Math.round(viewport?.width || document.documentElement.clientWidth || innerWidth));
+    H = Math.max(1, Math.round(viewport?.height || document.documentElement.clientHeight || innerHeight));
     canvas.width = Math.floor(W * dpr);
     canvas.height = Math.floor(H * dpr);
     canvas.style.width = W + "px";
     canvas.style.height = H + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    if (player) {
+      player.x = Math.max(player.r, Math.min(W - player.r, player.x));
+      player.y = Math.max(player.r + 58, Math.min(H - player.r, player.y));
+    }
   }
-  addEventListener("resize", resize);
+  addEventListener("resize", resize, { passive: true });
+  addEventListener("orientationchange", () => setTimeout(resize, 120), { passive: true });
+  window.visualViewport?.addEventListener("resize", resize, { passive: true });
   resize();
 
   function beep(freq = 440, duration = .06, type = "sine", volume = .035) {
@@ -4547,16 +4721,22 @@
     comboTimer -= dt;
     if (comboTimer <= 0) combo = Math.max(1, combo - dt * 2.5);
 
-    let dx = 0, dy = 0;
+    let dx = touchMove.active ? touchMove.x : 0;
+    let dy = touchMove.active ? touchMove.y : 0;
     if (keys.ArrowLeft || keys.a) dx--;
     if (keys.ArrowRight || keys.d) dx++;
     if (keys.ArrowUp || keys.w) dy--;
     if (keys.ArrowDown || keys.s) dy++;
 
-    const moving = dx || dy;
+    const moveStrength = Math.min(1, Math.hypot(dx, dy));
+    const moving = moveStrength > .04;
     if (moving) {
       const len = Math.hypot(dx, dy);
-      dx /= len; dy /= len;
+      dx = dx / len * moveStrength;
+      dy = dy / len * moveStrength;
+    } else {
+      dx = 0;
+      dy = 0;
     }
 
     const dashing = keys.Space && player.dash > 0;
@@ -5523,14 +5703,81 @@
     keys[e.code] = false;
   });
 
-  document.querySelectorAll(".mobile-btn").forEach(btn => {
-    const key = btn.dataset.key;
-    const press = e => { e.preventDefault(); keys[key] = true; };
-    const release = e => { e.preventDefault(); keys[key] = false; };
-    btn.addEventListener("pointerdown", press);
-    btn.addEventListener("pointerup", release);
-    btn.addEventListener("pointercancel", release);
-    btn.addEventListener("pointerleave", release);
+  function updateJoystickFromPointer(e) {
+    const rect = joystickZone.getBoundingClientRect();
+    joystickCenterX = rect.left + rect.width / 2;
+    joystickCenterY = rect.top + rect.height / 2;
+    joystickRadius = Math.max(1, rect.width * .29);
+    let dx = e.clientX - joystickCenterX;
+    let dy = e.clientY - joystickCenterY;
+    const distance = Math.hypot(dx, dy);
+    if (distance > joystickRadius) {
+      dx = dx / distance * joystickRadius;
+      dy = dy / distance * joystickRadius;
+    }
+    const deadZone = .10;
+    let nx = dx / joystickRadius;
+    let ny = dy / joystickRadius;
+    const magnitude = Math.hypot(nx, ny);
+    if (magnitude < deadZone) {
+      nx = 0;
+      ny = 0;
+    } else {
+      const scaled = (magnitude - deadZone) / (1 - deadZone);
+      nx = nx / magnitude * scaled;
+      ny = ny / magnitude * scaled;
+    }
+    touchMove.x = nx;
+    touchMove.y = ny;
+    joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  }
+
+  function releaseJoystick(e) {
+    if (e && touchMove.pointerId !== null && e.pointerId !== touchMove.pointerId) return;
+    touchMove.x = 0;
+    touchMove.y = 0;
+    touchMove.active = false;
+    touchMove.pointerId = null;
+    joystickStick.style.transform = "translate(-50%, -50%)";
+  }
+
+  joystickZone.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    touchMove.active = true;
+    touchMove.pointerId = e.pointerId;
+    joystickZone.setPointerCapture?.(e.pointerId);
+    updateJoystickFromPointer(e);
+  });
+  joystickZone.addEventListener("pointermove", e => {
+    if (!touchMove.active || e.pointerId !== touchMove.pointerId) return;
+    e.preventDefault();
+    updateJoystickFromPointer(e);
+  });
+  joystickZone.addEventListener("pointerup", releaseJoystick);
+  joystickZone.addEventListener("pointercancel", releaseJoystick);
+  joystickZone.addEventListener("lostpointercapture", releaseJoystick);
+
+  const pressDash = e => {
+    e.preventDefault();
+    keys.Space = true;
+    mobileDashBtn.classList.add("active");
+    mobileDashBtn.setPointerCapture?.(e.pointerId);
+  };
+  const releaseDash = e => {
+    e?.preventDefault?.();
+    keys.Space = false;
+    mobileDashBtn.classList.remove("active");
+  };
+  mobileDashBtn.addEventListener("pointerdown", pressDash);
+  mobileDashBtn.addEventListener("pointerup", releaseDash);
+  mobileDashBtn.addEventListener("pointercancel", releaseDash);
+  mobileDashBtn.addEventListener("lostpointercapture", releaseDash);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      releaseJoystick();
+      releaseDash();
+    }
   });
 
   tutorialBtn.addEventListener("click", openTutorial);
