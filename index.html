@@ -3556,6 +3556,7 @@ button:active { transform: translateY(0); }
         </div>
         <div class="menu-actions">
           <button id="startBtn">Start Run</button>
+          <button id="customBuildBtn" class="secondary-btn">Custom Build</button>
           <button id="cosmeticsBtn" class="secondary-btn">Cosmetics</button>
           <button id="collectablesBtn" class="secondary-btn">Collectables</button>
           <button id="skillTreeBtn" class="secondary-btn">Skill Tree</button>
@@ -3570,8 +3571,8 @@ button:active { transform: translateY(0); }
           <div class="class-header">
             <div>
               <div class="label">Choose Your Build</div>
-              <h2>Character Classes</h2>
-              <p>Your class changes the entire run. Skill Web bonuses are applied on top of it.</p>
+              <h2>Build Selection</h2>
+              <p>Choose a preset class or construct your own core configuration. Skill Web bonuses are applied afterward.</p>
             </div>
             <div class="class-mode-pill" id="classModePill">Standard Run</div>
           </div>
@@ -3587,6 +3588,20 @@ button:active { transform: translateY(0); }
               </div>
               <p class="class-description" id="classDetailDescription"></p>
               <div class="class-stat-list" id="classStatList"></div>
+              <section id="customBuildEditor" class="custom-build-editor" hidden>
+                <div class="custom-build-head">
+                  <div>
+                    <small>CORE CONFIGURATOR</small>
+                    <b>Allocate 15 system points</b>
+                  </div>
+                  <div class="custom-points"><span id="customBuildPoints">0</span> remaining</div>
+                </div>
+                <div id="customBuildControls" class="custom-build-controls"></div>
+                <div class="custom-build-actions">
+                  <button id="customBuildBalancedBtn" type="button" class="secondary-btn">Balanced</button>
+                  <button id="customBuildRandomBtn" type="button" class="secondary-btn">Randomize</button>
+                </div>
+              </section>
               <div class="class-info-box passive"><b id="classPassiveName">Passive</b><p id="classPassiveText"></p></div>
               <div class="class-info-box"><b>Starting Bonuses</b><div class="class-perks" id="classPerks"></div></div>
               <div class="class-info-box weakness"><b>Tradeoff</b><p id="classWeakness"></p></div>
@@ -4063,6 +4078,7 @@ button:active { transform: translateY(0); }
   const trailGrid = document.getElementById("trailGrid");
   const coinCount = document.getElementById("coinCount");
   const startBtn = document.getElementById("startBtn");
+  const customBuildBtn = document.getElementById("customBuildBtn");
   const lastResult = document.getElementById("lastResult");
   const classSelectPanel = document.getElementById("classSelectPanel");
   const classGrid = document.getElementById("classGrid");
@@ -4074,6 +4090,11 @@ button:active { transform: translateY(0); }
   const classDetailDifficulty = document.getElementById("classDetailDifficulty");
   const classDetailDescription = document.getElementById("classDetailDescription");
   const classStatList = document.getElementById("classStatList");
+  const customBuildEditor = document.getElementById("customBuildEditor");
+  const customBuildPoints = document.getElementById("customBuildPoints");
+  const customBuildControls = document.getElementById("customBuildControls");
+  const customBuildBalancedBtn = document.getElementById("customBuildBalancedBtn");
+  const customBuildRandomBtn = document.getElementById("customBuildRandomBtn");
   const classPassiveName = document.getElementById("classPassiveName");
   const classPassiveText = document.getElementById("classPassiveText");
   const classPerks = document.getElementById("classPerks");
@@ -4232,6 +4253,159 @@ button:active { transform: translateY(0); }
     classOrbNovaEvery: 0
   };
 
+  const CUSTOM_BUILD_TOTAL_POINTS = 15;
+  const CUSTOM_BUILD_KEYS = ["Shield", "Speed", "Dash", "Economy", "Power"];
+  const CUSTOM_BUILD_DEFAULT = { Shield: 3, Speed: 3, Dash: 3, Economy: 3, Power: 3 };
+  const CUSTOM_BUILD_DESCRIPTIONS = {
+    Shield: "Maximum shield and passive survivability",
+    Speed: "Movement speed and arena control",
+    Dash: "Dash capacity and recharge rate",
+    Economy: "Level energy and Neon Coin income",
+    Power: "Score output and boss damage"
+  };
+
+  function sanitizeCustomBuild(value) {
+    const build = {};
+    for (const key of CUSTOM_BUILD_KEYS) {
+      const raw = Number(value && value[key]);
+      build[key] = Number.isFinite(raw) ? Math.max(1, Math.min(5, Math.round(raw))) : CUSTOM_BUILD_DEFAULT[key];
+    }
+    let total = CUSTOM_BUILD_KEYS.reduce((sum, key) => sum + build[key], 0);
+    while (total > CUSTOM_BUILD_TOTAL_POINTS) {
+      const key = CUSTOM_BUILD_KEYS.slice().reverse().find(name => build[name] > 1);
+      if (!key) break;
+      build[key]--;
+      total--;
+    }
+    return build;
+  }
+
+  function loadCustomBuild() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("neonRushCustomBuild") || "null");
+      return sanitizeCustomBuild(saved || CUSTOM_BUILD_DEFAULT);
+    } catch (_) {
+      return { ...CUSTOM_BUILD_DEFAULT };
+    }
+  }
+
+  let customBuild = loadCustomBuild();
+
+  function saveCustomBuild() {
+    localStorage.setItem("neonRushCustomBuild", JSON.stringify(customBuild));
+  }
+
+  function customBuildUsedPoints() {
+    return CUSTOM_BUILD_KEYS.reduce((sum, key) => sum + customBuild[key], 0);
+  }
+
+  function customBuildRemainingPoints() {
+    return Math.max(0, CUSTOM_BUILD_TOTAL_POINTS - customBuildUsedPoints());
+  }
+
+  function customBuildPerks() {
+    const perks = [];
+    const shieldDelta = (customBuild.Shield - 3) * 15;
+    const speedDelta = (customBuild.Speed - 3) * 7;
+    const dashDelta = (customBuild.Dash - 3) * 25;
+    const economyDelta = (customBuild.Economy - 3) * 10;
+    const powerDelta = (customBuild.Power - 3) * 8;
+    perks.push(`${shieldDelta >= 0 ? "+" : ""}${shieldDelta} maximum shield`);
+    perks.push(`${speedDelta >= 0 ? "+" : ""}${speedDelta}% movement speed`);
+    perks.push(`${dashDelta >= 0 ? "+" : ""}${dashDelta} maximum dash and ${(customBuild.Dash - 3) * 10 >= 0 ? "+" : ""}${(customBuild.Dash - 3) * 10}% recharge`);
+    perks.push(`${economyDelta >= 0 ? "+" : ""}${economyDelta}% XP and Neon Coins`);
+    perks.push(`${powerDelta >= 0 ? "+" : ""}${powerDelta}% score${customBuild.Power >= 4 ? ` and +${customBuild.Power - 3} boss damage` : ""}`);
+    return perks;
+  }
+
+  function customBuildWeaknessText() {
+    const low = CUSTOM_BUILD_KEYS.filter(key => customBuild[key] <= 2);
+    if (!low.length) return "No unique class passive. Preset classes still have stronger specialized abilities.";
+    return `Low ${low.join(" / ")} allocation. Custom builds also receive no unique triggered passive.`;
+  }
+
+  function applyCustomBuild(stats) {
+    const shieldRank = customBuild.Shield;
+    const speedRank = customBuild.Speed;
+    const dashRank = customBuild.Dash;
+    const economyRank = customBuild.Economy;
+    const powerRank = customBuild.Power;
+
+    stats.maxHp = Math.max(35, stats.maxHp + (shieldRank - 3) * 15);
+    stats.speed *= Math.max(.65, 1 + (speedRank - 3) * .07);
+    stats.maxDash = Math.max(45, stats.maxDash + (dashRank - 3) * 25);
+    stats.dashRecharge *= Math.max(.55, 1 + (dashRank - 3) * .10);
+    stats.xpBoost *= Math.max(.55, 1 + (economyRank - 3) * .10);
+    stats.coinBoost *= Math.max(.55, 1 + (economyRank - 3) * .10);
+    stats.scoreBoost *= Math.max(.55, 1 + (powerRank - 3) * .08);
+    if (powerRank >= 4) stats.bossDamage += powerRank - 3;
+  }
+
+  function randomizeCustomBuild() {
+    const next = Object.fromEntries(CUSTOM_BUILD_KEYS.map(key => [key, 1]));
+    let remaining = CUSTOM_BUILD_TOTAL_POINTS - CUSTOM_BUILD_KEYS.length;
+    while (remaining > 0) {
+      const available = CUSTOM_BUILD_KEYS.filter(key => next[key] < 5);
+      const key = available[Math.floor(Math.random() * available.length)];
+      next[key]++;
+      remaining--;
+    }
+    customBuild = next;
+    saveCustomBuild();
+  }
+
+  function renderCustomBuildEditor() {
+    const visible = previewClassId === "custom";
+    customBuildEditor.hidden = !visible;
+    if (!visible) return;
+
+    const remaining = customBuildRemainingPoints();
+    customBuildPoints.textContent = remaining;
+    customBuildPoints.parentElement.classList.toggle("complete", remaining === 0);
+    customBuildControls.innerHTML = CUSTOM_BUILD_KEYS.map(key => `
+      <div class="custom-build-row">
+        <div class="custom-build-copy"><b>${key}</b><small>${CUSTOM_BUILD_DESCRIPTIONS[key]}</small></div>
+        <div class="custom-build-stepper">
+          <button type="button" data-custom-minus="${key}" aria-label="Lower ${key}" ${customBuild[key] <= 1 ? "disabled" : ""}>−</button>
+          <strong>${customBuild[key]}</strong>
+          <button type="button" data-custom-plus="${key}" aria-label="Raise ${key}" ${(customBuild[key] >= 5 || remaining <= 0) ? "disabled" : ""}>+</button>
+        </div>
+      </div>`).join("");
+
+    customBuildControls.querySelectorAll("[data-custom-minus]").forEach(button => {
+      button.onclick = () => {
+        const key = button.dataset.customMinus;
+        if (customBuild[key] <= 1) return;
+        customBuild[key]--;
+        saveCustomBuild();
+        renderClassSelect();
+        beep(350, .035, "square", .014);
+      };
+    });
+    customBuildControls.querySelectorAll("[data-custom-plus]").forEach(button => {
+      button.onclick = () => {
+        const key = button.dataset.customPlus;
+        if (customBuild[key] >= 5 || customBuildRemainingPoints() <= 0) return;
+        customBuild[key]++;
+        saveCustomBuild();
+        renderClassSelect();
+        beep(620, .035, "triangle", .014);
+      };
+    });
+
+    customBuildBalancedBtn.onclick = () => {
+      customBuild = { ...CUSTOM_BUILD_DEFAULT };
+      saveCustomBuild();
+      renderClassSelect();
+      beep(520, .05, "triangle", .018);
+    };
+    customBuildRandomBtn.onclick = () => {
+      randomizeCustomBuild();
+      renderClassSelect();
+      beep(740, .06, "sawtooth", .018);
+    };
+  }
+
   const characterClasses = [
     {
       id: "runner", name: "Core Runner", icon: "✦", hue: 185,
@@ -4243,6 +4417,17 @@ button:active { transform: translateY(0); }
       weakness: "No extreme specialty. Other classes can outperform it in their chosen role.",
       stats: { Shield: 3, Speed: 3, Dash: 3, Economy: 2, Power: 2 },
       apply: stats => { stats.scoreBoost *= 1.12; stats.comboDuration += 1; stats.maxDash += 10; }
+    },
+    {
+      id: "custom", name: "Custom Build", icon: "⌘", hue: 168,
+      role: "Build Lab", difficulty: "Variable",
+      description: "Construct your own run by reallocating 15 system points across five core attributes. Your configuration is saved between sessions.",
+      passiveName: "Modular Core",
+      get passiveText() { return `Current configuration: ${CUSTOM_BUILD_KEYS.map(key => `${key} ${customBuild[key]}`).join(" • ")}.`; },
+      get perks() { return customBuildPerks(); },
+      get weakness() { return customBuildWeaknessText(); },
+      get stats() { return { ...customBuild }; },
+      apply: applyCustomBuild
     },
     {
       id: "vanguard", name: "Neon Vanguard", icon: "⬢", hue: 350,
@@ -4383,11 +4568,15 @@ button:active { transform: translateY(0); }
         <div class="class-stat-track">${Array.from({length:5}, (_, i) => `<i class="class-stat-segment${i < value ? " on" : ""}"></i>`).join("")}</div>
       </div>`).join("");
 
-    classStartBtn.disabled = !unlocked;
-    classStartBtn.className = `class-start-btn${unlocked ? "" : " secondary-btn"}`;
-    classStartBtn.textContent = unlocked
-      ? (classSelectMode === "secret" ? `Enter Fight as ${preview.name}` : `Start as ${preview.name}`)
-      : preview.unlockText;
+    renderCustomBuildEditor();
+    const customReady = preview.id !== "custom" || customBuildRemainingPoints() === 0;
+    classStartBtn.disabled = !unlocked || !customReady;
+    classStartBtn.className = `class-start-btn${unlocked && customReady ? "" : " secondary-btn"}`;
+    classStartBtn.textContent = !unlocked
+      ? preview.unlockText
+      : !customReady
+        ? `Allocate ${customBuildRemainingPoints()} Remaining Point${customBuildRemainingPoints() === 1 ? "" : "s"}`
+        : (classSelectMode === "secret" ? `Enter Fight as ${preview.name}` : `Start as ${preview.name}`);
   }
 
   function openClassSelect(mode = "normal", origin = "start") {
@@ -7528,6 +7717,11 @@ button:active { transform: translateY(0); }
   });
 
   startBtn.addEventListener("click", () => openClassSelect("normal", "start"));
+  customBuildBtn.addEventListener("click", () => {
+    openClassSelect("normal", "start");
+    previewClassId = "custom";
+    renderClassSelect();
+  });
   if (!characterClasses.some(classDef => classDef.id === selectedClassId && isClassUnlocked(classDef))) selectedClassId = "runner";
   previewClassId = selectedClassId;
   updateClassHud();
@@ -7686,6 +7880,473 @@ button:active { transform: translateY(0); }
   repairMode();
 })();
 </script>
+
+
+<style id="command-interface-all-panels">
+/* =========================================================
+   Unified ZELQIRATH command interface
+   Every menu now uses the same full-screen visual language.
+   ========================================================= */
+:root {
+  --cmd-bg: #05080c;
+  --cmd-surface: #0a1016;
+  --cmd-surface-2: #0d151d;
+  --cmd-line: rgba(149, 196, 199, .18);
+  --cmd-line-strong: rgba(115, 231, 225, .38);
+  --cmd-text: #edf5f5;
+  --cmd-muted: #7f9097;
+  --cmd-cyan: #73e7e1;
+  --cmd-red: #d95f69;
+  --cmd-yellow: #d8bd72;
+}
+
+#overlay {
+  --panel-pad-x: clamp(18px, 4vw, 64px);
+  --panel-pad-y: clamp(46px, 6vh, 74px);
+}
+
+/* Secondary screens are now full viewport command screens too. */
+#overlay:has(#menu:not(.main-menu-mode)) {
+  padding: 0 !important;
+  background: #04070a !important;
+  backdrop-filter: none !important;
+}
+
+#menu:not(.main-menu-mode) {
+  position: relative !important;
+  inset: auto !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  color: var(--cmd-text);
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
+    radial-gradient(circle at 82% 18%, rgba(115,231,225,.09), transparent 25%),
+    linear-gradient(118deg, #05080c 0%, #080d12 55%, #07090d 100%) !important;
+  background-size: 52px 52px, 52px 52px, auto, auto !important;
+  box-shadow: none !important;
+}
+
+#menu:not(.main-menu-mode)::before {
+  content: "ZQ // COMMAND NETWORK";
+  position: fixed;
+  z-index: 100;
+  top: 20px;
+  left: var(--panel-pad-x);
+  color: rgba(176,205,207,.42);
+  font: 800 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .22em;
+  pointer-events: none;
+}
+#menu:not(.main-menu-mode)::after {
+  content: "LINK STABLE";
+  position: fixed;
+  z-index: 100;
+  top: 20px;
+  right: var(--panel-pad-x);
+  color: #81b9a5;
+  font: 800 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .18em;
+  pointer-events: none;
+}
+
+#menu:not(.main-menu-mode) > #cosmeticsPanel,
+#menu:not(.main-menu-mode) > #collectablesPanel,
+#menu:not(.main-menu-mode) > #skillTreePanel,
+#menu:not(.main-menu-mode) > #classSelectPanel {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: var(--panel-pad-y) var(--panel-pad-x) clamp(22px, 4vh, 44px) !important;
+  overflow: hidden !important;
+}
+
+#menu:not(.main-menu-mode) .shop-shell,
+#menu:not(.main-menu-mode) .tree-shell,
+#menu:not(.main-menu-mode) .class-shell {
+  width: min(1380px, 100%) !important;
+  max-width: none !important;
+  height: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+#menu:not(.main-menu-mode) .shop-topbar,
+#menu:not(.main-menu-mode) .tree-header,
+#menu:not(.main-menu-mode) .class-header {
+  flex: 0 0 auto;
+  min-height: 104px;
+  padding: 18px 20px !important;
+  border: 1px solid var(--cmd-line) !important;
+  border-left: 3px solid var(--cmd-cyan) !important;
+  border-radius: 0 !important;
+  background: linear-gradient(90deg, rgba(115,231,225,.045), rgba(255,255,255,.012)) !important;
+  box-shadow: none !important;
+}
+
+#menu:not(.main-menu-mode) .shop-title-wrap h2,
+#menu:not(.main-menu-mode) .tree-header h2,
+#menu:not(.main-menu-mode) .class-header h2 {
+  margin: 5px 0 4px !important;
+  color: var(--cmd-text) !important;
+  font-size: clamp(28px, 4vw, 48px) !important;
+  line-height: .95 !important;
+  letter-spacing: -.04em !important;
+  text-transform: uppercase;
+}
+
+#menu:not(.main-menu-mode) .label,
+#menu:not(.main-menu-mode) small,
+#menu:not(.main-menu-mode) .shop-tagline,
+#menu:not(.main-menu-mode) .class-header p,
+#menu:not(.main-menu-mode) .tree-header p {
+  color: var(--cmd-muted);
+}
+#menu:not(.main-menu-mode) .label {
+  font: 800 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .18em;
+}
+
+#menu:not(.main-menu-mode) .shop-sections,
+#menu:not(.main-menu-mode) .tree-body,
+#menu:not(.main-menu-mode) .class-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  margin: 10px 0 !important;
+  padding: 12px !important;
+  border: 1px solid var(--cmd-line) !important;
+  border-radius: 0 !important;
+  background: rgba(4,8,12,.74) !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+#menu:not(.main-menu-mode) .shop-sections,
+#menu:not(.main-menu-mode) .class-grid,
+#menu:not(.main-menu-mode) .class-detail,
+#menu:not(.main-menu-mode) .tree-canvas-wrap,
+#menu:not(.main-menu-mode) .tree-info-panel {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(115,231,225,.35) rgba(255,255,255,.035);
+}
+
+#menu:not(.main-menu-mode) .shop-footer,
+#menu:not(.main-menu-mode) .tree-footer,
+#menu:not(.main-menu-mode) .class-footer {
+  flex: 0 0 auto;
+  min-height: 62px;
+  padding: 10px 14px !important;
+  border: 1px solid var(--cmd-line) !important;
+  border-radius: 0 !important;
+  background: rgba(8,13,18,.94) !important;
+  box-shadow: none !important;
+}
+
+#menu:not(.main-menu-mode) button {
+  position: relative;
+  z-index: 1;
+  min-height: 42px;
+  border-radius: 2px !important;
+  border: 1px solid var(--cmd-line-strong) !important;
+  color: #e8f5f4 !important;
+  background: linear-gradient(180deg, rgba(34,75,78,.96), rgba(15,38,42,.98)) !important;
+  box-shadow: none !important;
+  font: 800 12px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+#menu:not(.main-menu-mode) button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(115,231,225,.72) !important;
+  background: linear-gradient(180deg, rgba(50,105,107,.98), rgba(21,50,54,.98)) !important;
+}
+#menu:not(.main-menu-mode) button:disabled { opacity: .38; cursor: not-allowed; }
+#menu:not(.main-menu-mode) .secondary-btn {
+  color: #b9c6ca !important;
+  border-color: rgba(255,255,255,.14) !important;
+  background: rgba(255,255,255,.025) !important;
+}
+
+/* Flat command cards instead of unrelated neon/glass themes. */
+#menu:not(.main-menu-mode) .shop-item,
+#menu:not(.main-menu-mode) .collectable-card,
+#menu:not(.main-menu-mode) .cosmetic-section,
+#menu:not(.main-menu-mode) .featured-card,
+#menu:not(.main-menu-mode) .coin-display,
+#menu:not(.main-menu-mode) .class-card,
+#menu:not(.main-menu-mode) .class-detail,
+#menu:not(.main-menu-mode) .class-info-box,
+#menu:not(.main-menu-mode) .tree-info-card,
+#menu:not(.main-menu-mode) .tree-info-panel,
+#menu:not(.main-menu-mode) .tree-canvas-wrap,
+#menu:not(.main-menu-mode) .collectables-progress,
+#menu:not(.main-menu-mode) .upgrade-card,
+#menu:not(.main-menu-mode) .death-stat,
+#menu:not(.main-menu-mode) .victory-stat,
+#menu:not(.main-menu-mode) .secret-progress-card {
+  border-radius: 2px !important;
+  border: 1px solid var(--cmd-line) !important;
+  background: linear-gradient(145deg, rgba(13,21,29,.94), rgba(7,12,17,.97)) !important;
+  box-shadow: none !important;
+}
+
+#menu:not(.main-menu-mode) .class-card.selected,
+#menu:not(.main-menu-mode) .shop-item.selected,
+#menu:not(.main-menu-mode) .shop-item.equipped {
+  border-color: hsl(var(--class-hue, 180) 75% 67% / .72) !important;
+  box-shadow: inset 3px 0 hsl(var(--class-hue, 180) 85% 63% / .9) !important;
+}
+
+#menu:not(.main-menu-mode) .class-mode-pill,
+#menu:not(.main-menu-mode) .tree-balance,
+#menu:not(.main-menu-mode) .price-pill,
+#menu:not(.main-menu-mode) .collectables-progress,
+#menu:not(.main-menu-mode) .ascension-badge {
+  border-radius: 2px !important;
+  border: 1px solid var(--cmd-line) !important;
+  background: rgba(255,255,255,.025) !important;
+  box-shadow: none !important;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+#menu:not(.main-menu-mode) .section-head {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cmd-line);
+}
+#menu:not(.main-menu-mode) .section-head h3 {
+  color: var(--cmd-text);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* Custom build configurator. */
+.custom-build-editor {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid rgba(115,231,225,.23);
+  border-left: 3px solid var(--cmd-cyan);
+  background: rgba(5,12,16,.86);
+}
+.custom-build-editor[hidden] { display: none !important; }
+.custom-build-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cmd-line);
+}
+.custom-build-head small {
+  display: block;
+  margin-bottom: 4px;
+  font: 800 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .16em;
+}
+.custom-build-head b { font-size: 13px; color: var(--cmd-text); }
+.custom-points {
+  min-width: 118px;
+  padding: 8px 10px;
+  border: 1px solid rgba(216,189,114,.28);
+  color: #d8bd72;
+  background: rgba(216,189,114,.045);
+  text-align: center;
+  font: 800 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-transform: uppercase;
+}
+.custom-points span { font-size: 18px; }
+.custom-points.complete { color: #8fe0c1; border-color: rgba(143,224,193,.28); background: rgba(143,224,193,.045); }
+.custom-build-controls { display: grid; gap: 5px; }
+.custom-build-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.075);
+  background: rgba(255,255,255,.018);
+}
+.custom-build-copy b { display: block; color: var(--cmd-text); font-size: 12px; text-transform: uppercase; }
+.custom-build-copy small { display: block; margin-top: 3px; font-size: 9px; line-height: 1.35; }
+.custom-build-stepper { display: grid; grid-template-columns: 34px 30px 34px; align-items: center; gap: 5px; }
+#menu .custom-build-stepper button {
+  min-height: 32px !important;
+  width: 34px;
+  padding: 0 !important;
+  font-size: 17px !important;
+}
+.custom-build-stepper strong { text-align: center; color: var(--cmd-cyan); font: 900 16px/1 ui-monospace, monospace; }
+.custom-build-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+#menu .custom-build-actions button { min-height: 35px; font-size: 10px; }
+
+/* Pause/results/upgrade are still modal by purpose, but share the command skin. */
+#pausePanel,
+#deathPanel,
+#victoryPanel,
+#secretVictoryPanel,
+#secretDefeatPanel,
+#upgradePanel {
+  width: min(720px, calc(100vw - 32px)) !important;
+  max-height: calc(100dvh - 64px) !important;
+  overflow-y: auto !important;
+  border: 1px solid var(--cmd-line-strong) !important;
+  border-left: 3px solid var(--cmd-cyan) !important;
+  border-radius: 2px !important;
+  color: var(--cmd-text);
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(13,21,29,.99), rgba(6,10,15,.99)) !important;
+  background-size: 32px 32px, 32px 32px, auto !important;
+  box-shadow: 0 30px 100px rgba(0,0,0,.7) !important;
+}
+#pausePanel .pause-shell,
+#deathPanel .death-shell,
+#victoryPanel .victory-shell,
+#secretVictoryPanel .secret-victory-shell,
+#secretDefeatPanel .secret-defeat-shell {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  #overlay { --panel-pad-x: max(12px, env(safe-area-inset-left)); --panel-pad-y: max(52px, calc(env(safe-area-inset-top) + 38px)); }
+  #menu:not(.main-menu-mode)::before { top: max(14px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); }
+  #menu:not(.main-menu-mode)::after { top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); }
+  #menu:not(.main-menu-mode) > #cosmeticsPanel,
+  #menu:not(.main-menu-mode) > #collectablesPanel,
+  #menu:not(.main-menu-mode) > #skillTreePanel,
+  #menu:not(.main-menu-mode) > #classSelectPanel {
+    padding: var(--panel-pad-y) max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)) !important;
+  }
+  #menu:not(.main-menu-mode) .shop-topbar,
+  #menu:not(.main-menu-mode) .tree-header,
+  #menu:not(.main-menu-mode) .class-header {
+    min-height: 76px;
+    padding: 12px !important;
+  }
+  #menu:not(.main-menu-mode) .shop-title-wrap h2,
+  #menu:not(.main-menu-mode) .tree-header h2,
+  #menu:not(.main-menu-mode) .class-header h2 { font-size: clamp(24px, 8vw, 34px) !important; }
+  #menu:not(.main-menu-mode) .shop-sections,
+  #menu:not(.main-menu-mode) .tree-body,
+  #menu:not(.main-menu-mode) .class-body { margin: 7px 0 !important; padding: 7px !important; }
+  .custom-build-row { min-height: 50px; padding: 7px 8px; }
+  .custom-build-copy small { display: none; }
+}
+
+@media (max-width: 430px) {
+  .custom-build-head { align-items: stretch; flex-direction: column; }
+  .custom-points { width: 100%; }
+  .custom-build-row { grid-template-columns: minmax(0, 1fr) 104px; }
+  .custom-build-actions { grid-template-columns: 1fr; }
+}
+</style>
+
+
+<style id="command-interface-overlay-polish">
+/* Remaining overlays and utility windows use the same command language. */
+.mobile-disclaimer-card,
+.tutorial-window,
+.debug-window,
+#liveUpgradePanel {
+  border-radius: 2px !important;
+  border: 1px solid var(--cmd-line-strong) !important;
+  border-left: 3px solid var(--cmd-cyan) !important;
+  color: var(--cmd-text) !important;
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(13,21,29,.99), rgba(6,10,15,.99)) !important;
+  background-size: 32px 32px, 32px 32px, auto !important;
+  box-shadow: 0 30px 100px rgba(0,0,0,.72) !important;
+}
+#tutorialOverlay,
+#mobileDisclaimer {
+  background: rgba(3,6,9,.9) !important;
+  backdrop-filter: blur(10px) saturate(.7) !important;
+}
+.tutorial-window { width: min(720px, 94vw) !important; padding: 28px !important; text-align: left !important; }
+.tutorial-progress { justify-content: flex-start !important; }
+.tutorial-step-icon,
+.mobile-disclaimer-icon {
+  border-radius: 2px !important;
+  border: 1px solid var(--cmd-line-strong) !important;
+  color: var(--cmd-cyan) !important;
+  background: rgba(115,231,225,.045) !important;
+  box-shadow: none !important;
+}
+.tutorial-step-icon { margin: 0 0 16px !important; }
+.tutorial-window h2,
+.mobile-disclaimer-card h2,
+.debug-header h2 {
+  color: var(--cmd-text) !important;
+  letter-spacing: -.035em;
+  text-transform: uppercase;
+}
+.tutorial-window p,
+.mobile-disclaimer-card p { color: var(--cmd-muted) !important; }
+.tutorial-demo {
+  border-radius: 2px !important;
+  border: 1px solid var(--cmd-line) !important;
+  background: rgba(255,255,255,.018) !important;
+  box-shadow: none !important;
+}
+.tutorial-key,
+.drag-pill {
+  border-radius: 2px !important;
+  border: 1px solid var(--cmd-line) !important;
+  background: rgba(255,255,255,.025) !important;
+  box-shadow: none !important;
+}
+.debug-header,
+.debug-section { border-color: var(--cmd-line) !important; }
+.debug-window button,
+.tutorial-window button,
+.mobile-disclaimer-card button,
+#liveUpgradePanel button {
+  border-radius: 2px !important;
+  border: 1px solid var(--cmd-line-strong) !important;
+  color: #e8f5f4 !important;
+  background: linear-gradient(180deg, rgba(34,75,78,.96), rgba(15,38,42,.98)) !important;
+  box-shadow: none !important;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-transform: uppercase;
+}
+.debug-input {
+  border-radius: 2px !important;
+  border-color: var(--cmd-line) !important;
+  background: rgba(255,255,255,.025) !important;
+}
+#menu:not(.main-menu-mode) .class-start-btn {
+  position: sticky;
+  z-index: 5;
+  bottom: 0;
+  margin-top: 10px;
+  box-shadow: 0 -12px 24px rgba(5,8,12,.92) !important;
+}
+@media (max-width: 900px), (pointer: coarse) {
+  .tutorial-window { padding: 20px !important; text-align: left !important; }
+  .tutorial-window h2 { font-size: 28px !important; }
+  .mobile-disclaimer-card { border-radius: 2px !important; }
+}
+</style>
 
 </body>
 </html>
