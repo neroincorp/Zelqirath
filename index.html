@@ -3498,6 +3498,103 @@ button:active { transform: translateY(0); }
 }
 
 </style>
+
+<style id="named-builds-and-scroll-repair">
+/* Long command pages must scroll inside the viewport on desktop and mobile. */
+#menu:not(.main-menu-mode) > #cosmeticsPanel,
+#menu:not(.main-menu-mode) > #collectablesPanel,
+#menu:not(.main-menu-mode) > #skillTreePanel,
+#menu:not(.main-menu-mode) > #classSelectPanel {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+#cosmeticsPanel .shop-shell,
+#collectablesPanel .shop-shell,
+#skillTreePanel .tree-shell,
+#classSelectPanel .class-shell {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+#cosmeticsPanel .shop-sections,
+#collectablesPanel .shop-sections {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding-bottom: 36px !important;
+}
+#classSelectPanel .class-body,
+#skillTreePanel .tree-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+#classSelectPanel .class-grid,
+#classSelectPanel .class-detail,
+#skillTreePanel .tree-canvas-wrap,
+#skillTreePanel .tree-info-panel {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.shop-topbar, .shop-balance-row, .shop-footer,
+.tree-header, .tree-footer, .class-header, .class-footer {
+  flex: 0 0 auto !important;
+}
+.custom-build-library {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid rgba(115,231,225,.22);
+  background: rgba(255,255,255,.018);
+}
+.custom-build-library label {
+  color: var(--cmd-muted, #94a2a7);
+  font: 800 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .16em;
+}
+.custom-build-library input,
+.custom-build-library select {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  box-sizing: border-box;
+  border: 1px solid rgba(115,231,225,.25);
+  border-radius: 2px;
+  outline: none;
+  color: #e8f5f4;
+  background: #080e14;
+  padding: 9px 10px;
+  font: 800 12px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.custom-build-library input:focus,
+.custom-build-library select:focus { border-color: rgba(115,231,225,.75); }
+.custom-build-library-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) auto auto;
+  gap: 7px;
+}
+#menu .custom-build-library-row button { min-height: 40px !important; padding: 8px 12px !important; }
+@media (max-width: 700px), (pointer: coarse) {
+  .custom-build-library-row { grid-template-columns: 1fr 1fr; }
+  .custom-build-library-row select { grid-column: 1 / -1; }
+  #cosmeticsPanel .shop-sections,
+  #collectablesPanel .shop-sections { padding-bottom: calc(44px + env(safe-area-inset-bottom)) !important; }
+}
+</style>
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -3595,6 +3692,15 @@ button:active { transform: translateY(0); }
                     <b>Allocate 15 system points</b>
                   </div>
                   <div class="custom-points"><span id="customBuildPoints">0</span> remaining</div>
+                </div>
+                <div class="custom-build-library">
+                  <label for="customBuildName">BUILD NAME</label>
+                  <input id="customBuildName" maxlength="24" autocomplete="off" placeholder="My Build" />
+                  <div class="custom-build-library-row">
+                    <select id="customBuildPresetSelect" aria-label="Saved builds"></select>
+                    <button id="customBuildSavePresetBtn" type="button">Save Build</button>
+                    <button id="customBuildDeletePresetBtn" type="button" class="secondary-btn">Delete</button>
+                  </div>
                 </div>
                 <div id="customBuildControls" class="custom-build-controls"></div>
                 <div class="custom-build-actions">
@@ -4093,6 +4199,10 @@ button:active { transform: translateY(0); }
   const customBuildEditor = document.getElementById("customBuildEditor");
   const customBuildPoints = document.getElementById("customBuildPoints");
   const customBuildControls = document.getElementById("customBuildControls");
+  const customBuildName = document.getElementById("customBuildName");
+  const customBuildPresetSelect = document.getElementById("customBuildPresetSelect");
+  const customBuildSavePresetBtn = document.getElementById("customBuildSavePresetBtn");
+  const customBuildDeletePresetBtn = document.getElementById("customBuildDeletePresetBtn");
   const customBuildBalancedBtn = document.getElementById("customBuildBalancedBtn");
   const customBuildRandomBtn = document.getElementById("customBuildRandomBtn");
   const classPassiveName = document.getElementById("classPassiveName");
@@ -4290,9 +4400,39 @@ button:active { transform: translateY(0); }
   }
 
   let customBuild = loadCustomBuild();
+  let customBuildCurrentName = (localStorage.getItem("neonRushCustomBuildName") || "My Build").slice(0, 24);
+  let customBuildPresets = (() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem("neonRushCustomBuildPresets") || "[]");
+      return Array.isArray(parsed) ? parsed.filter(item => item && typeof item.name === "string" && item.build).slice(0, 12).map(item => ({
+        id: String(item.id || Date.now() + Math.random()),
+        name: item.name.trim().slice(0, 24) || "Unnamed Build",
+        build: sanitizeCustomBuild(item.build)
+      })) : [];
+    } catch (_) { return []; }
+  })();
+
+  function cleanBuildName(value) {
+    return String(value || "").replace(/[<>]/g, "").trim().replace(/\s+/g, " ").slice(0, 24) || "My Build";
+  }
 
   function saveCustomBuild() {
+    customBuildCurrentName = cleanBuildName(customBuildName ? customBuildName.value : customBuildCurrentName);
     localStorage.setItem("neonRushCustomBuild", JSON.stringify(customBuild));
+    localStorage.setItem("neonRushCustomBuildName", customBuildCurrentName);
+  }
+
+  function saveCustomBuildPresets() {
+    localStorage.setItem("neonRushCustomBuildPresets", JSON.stringify(customBuildPresets));
+  }
+
+  function renderCustomBuildPresetList(selectedId = "") {
+    if (!customBuildPresetSelect) return;
+    customBuildPresetSelect.innerHTML = `<option value="">Load saved build…</option>` + customBuildPresets.map(item =>
+      `<option value="${item.id}">${item.name}</option>`
+    ).join("");
+    customBuildPresetSelect.value = selectedId;
+    customBuildDeletePresetBtn.disabled = !selectedId;
   }
 
   function customBuildUsedPoints() {
@@ -4360,6 +4500,8 @@ button:active { transform: translateY(0); }
     if (!visible) return;
 
     const remaining = customBuildRemainingPoints();
+    customBuildName.value = customBuildCurrentName;
+    renderCustomBuildPresetList(customBuildPresetSelect.value);
     customBuildPoints.textContent = remaining;
     customBuildPoints.parentElement.classList.toggle("complete", remaining === 0);
     customBuildControls.innerHTML = CUSTOM_BUILD_KEYS.map(key => `
@@ -4392,6 +4534,51 @@ button:active { transform: translateY(0); }
         beep(620, .035, "triangle", .014);
       };
     });
+
+    customBuildName.oninput = () => {
+      customBuildCurrentName = cleanBuildName(customBuildName.value);
+      localStorage.setItem("neonRushCustomBuildName", customBuildCurrentName);
+      classDetailName.textContent = customBuildCurrentName;
+    };
+    customBuildPresetSelect.onchange = () => {
+      const preset = customBuildPresets.find(item => item.id === customBuildPresetSelect.value);
+      customBuildDeletePresetBtn.disabled = !preset;
+      if (!preset) return;
+      customBuild = { ...preset.build };
+      customBuildCurrentName = preset.name;
+      saveCustomBuild();
+      renderClassSelect();
+      customBuildPresetSelect.value = preset.id;
+      customBuildDeletePresetBtn.disabled = false;
+      beep(600, .05, "triangle", .018);
+    };
+    customBuildSavePresetBtn.onclick = () => {
+      saveCustomBuild();
+      const name = cleanBuildName(customBuildName.value);
+      const existing = customBuildPresets.find(item => item.name.toLowerCase() === name.toLowerCase());
+      let selectedId;
+      if (existing) {
+        existing.name = name;
+        existing.build = { ...customBuild };
+        selectedId = existing.id;
+      } else {
+        selectedId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        customBuildPresets.unshift({ id: selectedId, name, build: { ...customBuild } });
+        customBuildPresets = customBuildPresets.slice(0, 12);
+      }
+      saveCustomBuildPresets();
+      renderCustomBuildPresetList(selectedId);
+      customBuildDeletePresetBtn.disabled = false;
+      beep(820, .06, "triangle", .02);
+    };
+    customBuildDeletePresetBtn.onclick = () => {
+      const id = customBuildPresetSelect.value;
+      if (!id) return;
+      customBuildPresets = customBuildPresets.filter(item => item.id !== id);
+      saveCustomBuildPresets();
+      renderCustomBuildPresetList();
+      beep(220, .05, "square", .018);
+    };
 
     customBuildBalancedBtn.onclick = () => {
       customBuild = { ...CUSTOM_BUILD_DEFAULT };
@@ -4520,9 +4707,10 @@ button:active { transform: translateY(0); }
   function updateClassHud() {
     const classDef = getCharacterClass();
     classHudIcon.textContent = classDef.icon;
-    classHudName.textContent = classDef.name;
+    const activeClassName = classDef.id === "custom" ? customBuildCurrentName : classDef.name;
+    classHudName.textContent = activeClassName;
     classHudBadge.style.setProperty("--hud-class-hue", classDef.hue);
-    pauseClassSummary.textContent = `${classDef.icon} ${classDef.name} — ${classDef.passiveName}`;
+    pauseClassSummary.textContent = `${classDef.icon} ${activeClassName} — ${classDef.passiveName}`;
   }
 
   function renderClassSelect() {
@@ -4554,7 +4742,7 @@ button:active { transform: translateY(0); }
     const unlocked = isClassUnlocked(preview);
     classDetail.style.setProperty("--detail-hue", preview.hue);
     classDetailIcon.textContent = preview.icon;
-    classDetailName.textContent = preview.name;
+    classDetailName.textContent = preview.id === "custom" ? customBuildCurrentName : preview.name;
     classDetailRole.textContent = preview.role;
     classDetailDifficulty.textContent = preview.difficulty;
     classDetailDescription.textContent = preview.description;
@@ -4576,7 +4764,7 @@ button:active { transform: translateY(0); }
       ? preview.unlockText
       : !customReady
         ? `Allocate ${customBuildRemainingPoints()} Remaining Point${customBuildRemainingPoints() === 1 ? "" : "s"}`
-        : (classSelectMode === "secret" ? `Enter Fight as ${preview.name}` : `Start as ${preview.name}`);
+        : (classSelectMode === "secret" ? `Enter Fight as ${preview.id === "custom" ? customBuildCurrentName : preview.name}` : `Start as ${preview.id === "custom" ? customBuildCurrentName : preview.name}`);
   }
 
   function openClassSelect(mode = "normal", origin = "start") {
