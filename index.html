@@ -7566,5 +7566,126 @@ button:active { transform: translateY(0); }
 })();
 </script>
 
+
+<style id="desktop-ui-repair">
+/* Desktop interface repair: every secondary screen is a centered viewport panel. */
+@media (min-width: 901px) and (pointer: fine) {
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+
+  #overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    min-height: 0 !important;
+    padding: clamp(18px, 2.5vw, 34px) !important;
+    place-items: center !important;
+    overflow: hidden !important;
+  }
+
+  #menu:not(.main-menu-mode) {
+    position: relative !important;
+    inset: auto !important;
+    margin: 0 auto !important;
+    width: min(1040px, calc(100vw - 48px)) !important;
+    max-width: calc(100vw - 48px) !important;
+    height: min(880px, calc(100vh - 48px)) !important;
+    max-height: calc(100vh - 48px) !important;
+    min-height: 0 !important;
+    padding: 18px !important;
+    overflow: hidden !important;
+    transform: none !important;
+  }
+
+  #menu:not(.main-menu-mode) > #cosmeticsPanel,
+  #menu:not(.main-menu-mode) > #collectablesPanel,
+  #menu:not(.main-menu-mode) > #skillTreePanel,
+  #menu:not(.main-menu-mode) > #classSelectPanel {
+    position: absolute !important;
+    inset: 18px !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #menu:not(.main-menu-mode) .shop-shell,
+  #menu:not(.main-menu-mode) .tree-shell,
+  #menu:not(.main-menu-mode) .class-shell {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #menu:not(.main-menu-mode) .shop-sections,
+  #menu:not(.main-menu-mode) .tree-body,
+  #menu:not(.main-menu-mode) .class-body,
+  #menu:not(.main-menu-mode) .class-grid,
+  #menu:not(.main-menu-mode) .class-detail {
+    min-height: 0 !important;
+  }
+
+  #menu:not(.main-menu-mode) .shop-sections,
+  #menu:not(.main-menu-mode) .tree-body,
+  #menu:not(.main-menu-mode) .class-grid,
+  #menu:not(.main-menu-mode) .class-detail {
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  #menu.main-menu-mode .menu-actions button {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+
+  #menu.main-menu-mode .menu-actions {
+    position: relative;
+    z-index: 2;
+  }
+}
+</style>
+<script id="desktop-ui-repair-script">
+(() => {
+  const menu = document.getElementById('menu');
+  const overlay = document.getElementById('overlay');
+  const start = document.getElementById('startPanel');
+  if (!menu || !overlay || !start) return;
+
+  const panelIds = [
+    'classSelectPanel','pausePanel','deathPanel','victoryPanel',
+    'secretVictoryPanel','secretDefeatPanel','cosmeticsPanel',
+    'collectablesPanel','skillTreePanel','upgradePanel'
+  ];
+
+  const isShown = el => el && getComputedStyle(el).display !== 'none';
+
+  const repairMode = () => {
+    const secondaryOpen = panelIds.some(id => isShown(document.getElementById(id)));
+    const mainOpen = isShown(overlay) && isShown(start) && !secondaryOpen;
+    menu.classList.toggle('main-menu-mode', mainOpen);
+    if (secondaryOpen) menu.classList.add('shop-mode');
+    else if (mainOpen) menu.classList.remove('shop-mode');
+    if (isShown(overlay)) overlay.scrollTop = 0;
+  };
+
+  const targets = [menu, overlay, start, ...panelIds.map(id => document.getElementById(id)).filter(Boolean)];
+  const observer = new MutationObserver(() => requestAnimationFrame(repairMode));
+  targets.forEach(el => observer.observe(el, {attributes:true, attributeFilter:['style','class']}));
+
+  document.addEventListener('click', () => {
+    requestAnimationFrame(repairMode);
+    setTimeout(repairMode, 0);
+  }, true);
+  window.addEventListener('resize', repairMode);
+  window.addEventListener('orientationchange', repairMode);
+  repairMode();
+})();
+</script>
+
 </body>
 </html>
