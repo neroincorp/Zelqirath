@@ -508,6 +508,7 @@
 
 
     .support-disclaimer {
+      display: none;
       margin: 14px auto 16px;
       max-width: 610px;
       padding: 12px 14px;
@@ -526,6 +527,10 @@
       color: #ffd27a;
       font-size: 13px;
       letter-spacing: .02em;
+    }
+
+    html.mobile-device .support-disclaimer {
+      display: block;
     }
 
     #mobileDisclaimer {
@@ -6515,12 +6520,19 @@
     requestAnimationFrame(loop);
   }
 
-  function shouldShowMobileDisclaimer() {
-    return matchMedia("(pointer: coarse)").matches || Math.min(innerWidth, innerHeight) <= 820;
+  function isMobileDevice() {
+    const ua = navigator.userAgent || "";
+    const uaDataMobile = navigator.userAgentData?.mobile === true;
+    const mobileUA = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+    const iPadOS = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+    return uaDataMobile || mobileUA || iPadOS;
   }
 
+  const mobileDeviceDetected = isMobileDevice();
+  document.documentElement.classList.toggle("mobile-device", mobileDeviceDetected);
+
   function openMobileDisclaimer() {
-    if (!mobileDisclaimer || !shouldShowMobileDisclaimer()) return;
+    if (!mobileDisclaimer || !mobileDeviceDetected) return;
     if (sessionStorage.getItem("zelqirathMobileDisclaimerSeen") === "true") return;
     mobileDisclaimer.classList.add("show");
   }
