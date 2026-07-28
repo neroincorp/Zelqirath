@@ -3502,6 +3502,7 @@ button:active { transform: translateY(0); }
 <style id="named-builds-and-scroll-repair">
 /* Long command pages must scroll inside the viewport on desktop and mobile. */
 #menu:not(.main-menu-mode) > #cosmeticsPanel,
+#menu:not(.main-menu-mode) > #lockerPanel,
 #menu:not(.main-menu-mode) > #collectablesPanel,
 #menu:not(.main-menu-mode) > #skillTreePanel,
 #menu:not(.main-menu-mode) > #classSelectPanel {
@@ -3639,28 +3640,87 @@ button:active { transform: translateY(0); }
 
   <div id="overlay">
     <div id="menu">
-      <div id="startPanel">
-        <h1>ZELQIRATH</h1>
-        <p class="subtitle">Grab energy orbs, chain huge combos, dodge hunters, and choose a power-up every level. The arena keeps getting faster.</p>
-        <div class="support-disclaimer">
-          <b>Mobile Support Notice</b>
-          The mobile version is experimental, very buggy, and only barely supported. Controls, menus, performance, and screen sizing may not work correctly on every phone. For the intended and most reliable experience, play Zelqirath on a PC with a keyboard.
-        </div>
-        <div class="instructions">
-          <div class="instruction"><b>WASD / Joystick</b>Move</div>
-          <div class="instruction"><b>Space</b>Dash through danger</div>
-          <div class="instruction"><b>Collect</b>Build your multiplier</div>
-        </div>
-        <div class="menu-actions">
-          <button id="startBtn">Start Run</button>
-          <button id="customBuildBtn" class="secondary-btn">Custom Build</button>
-          <button id="cosmeticsBtn" class="secondary-btn">Cosmetics</button>
-          <button id="collectablesBtn" class="secondary-btn">Collectables</button>
-          <button id="skillTreeBtn" class="secondary-btn">Skill Tree</button>
-          <button id="tutorialBtn" class="secondary-btn">Tutorial</button>
-          <button id="secretBossBtn">??? Secret Signal</button>
-        </div>
-        <p class="subtitle" id="lastResult"></p>
+      <div id="startPanel" class="hq-screen">
+        <header class="hq-header">
+          <div class="hq-brand">
+            <span class="hq-brand-mark">ZQ</span>
+            <div>
+              <small>ORBITAL OPERATIONS DECK</small>
+              <h1>ZELQIRATH HEADQUARTERS</h1>
+            </div>
+          </div>
+          <div class="hq-resource-strip">
+            <div><small>NEON COINS</small><b>✦ <span id="hqCoins">0</span></b></div>
+            <div><small>BEST SCORE</small><b id="hqBest">0</b></div>
+            <div><small>ACTIVE BUILD</small><b id="hqBuildName">Core Runner</b></div>
+          </div>
+        </header>
+
+        <main class="hq-grid">
+          <section class="hq-hangar hq-module">
+            <div class="hq-module-head">
+              <div><small>HANGAR 01</small><h2>THE ZELQIRATH</h2></div>
+              <span class="hq-online"><i></i> FLIGHT READY</span>
+            </div>
+            <div class="hq-hangar-stage">
+              <div class="hq-flight-lines" aria-hidden="true"></div>
+              <div class="hq-ship-shadow" aria-hidden="true"></div>
+              <button id="hqShip" class="hq-ship" aria-label="Launch mission">
+                <span class="hq-ship-wing left"></span>
+                <span class="hq-ship-wing right"></span>
+                <span class="hq-ship-body">
+                  <span class="hq-ship-core" id="hqShipCore">✦</span>
+                  <span class="hq-ship-cockpit"></span>
+                </span>
+                <span class="hq-ship-engine one"></span>
+                <span class="hq-ship-engine two"></span>
+              </button>
+              <div class="hq-deck-markings" aria-hidden="true"><span>01</span><span>ZQ</span><span>01</span></div>
+            </div>
+            <div class="hq-loadout-strip">
+              <div><small>CORE</small><b id="hqSkinName">Neon Core</b></div>
+              <div><small>FRAME</small><b id="hqShapeName">Star Core</b></div>
+              <div><small>TRAIL</small><b id="hqTrailName">Classic</b></div>
+              <div><small>AURA</small><b id="hqAuraName">No Aura</b></div>
+            </div>
+            <button id="startBtn" class="hq-launch-btn"><span>LAUNCH MISSION</span><small>Choose a build and enter the arena</small></button>
+          </section>
+
+          <aside class="hq-stations hq-module">
+            <div class="hq-module-head">
+              <div><small>COMMAND NETWORK</small><h2>STATIONS</h2></div>
+              <span class="hq-station-count">7 ONLINE</span>
+            </div>
+            <div class="hq-station-grid">
+              <button id="customBuildBtn" class="hq-station primary"><span class="station-icon">⌬</span><span><b>BUILD BAY</b><small>Create and name custom builds</small></span><em>OPEN</em></button>
+              <button id="lockerBtn" class="hq-station"><span class="station-icon">▦</span><span><b>LOCKER</b><small>Equip everything you own</small></span><em>OPEN</em></button>
+              <button id="cosmeticsBtn" class="hq-station"><span class="station-icon">✦</span><span><b>NEON MARKET</b><small>Purchase new cosmetics</small></span><em>OPEN</em></button>
+              <button id="collectablesBtn" class="hq-station"><span class="station-icon">♛</span><span><b>TROPHY VAULT</b><small>Boss and secret rewards</small></span><em>OPEN</em></button>
+              <button id="skillTreeBtn" class="hq-station"><span class="station-icon">◎</span><span><b>SKILL WEB</b><small>Permanent core upgrades</small></span><em>OPEN</em></button>
+              <button id="tutorialBtn" class="hq-station"><span class="station-icon">?</span><span><b>TRAINING DECK</b><small>Controls and survival basics</small></span><em>OPEN</em></button>
+              <button id="secretBossBtn" class="hq-station secret"><span class="station-icon">⌁</span><span><b>UNKNOWN SIGNAL</b><small>Access requirement encrypted</small></span><em>LOCKED</em></button>
+            </div>
+          </aside>
+
+          <section class="hq-collection hq-module">
+            <div class="hq-module-head">
+              <div><small>DISPLAY ARCHIVE</small><h2>COLLECTIBLES</h2></div>
+              <button id="hqOpenCollectables" class="hq-text-btn">VIEW TROPHY VAULT →</button>
+            </div>
+            <div class="hq-collection-body">
+              <div class="hq-trophy-shelf" id="hqCollectibleShelf"></div>
+              <div class="hq-collection-status">
+                <div class="hq-progress-ring"><span id="hqCollectionPercent">0%</span></div>
+                <div><small>COLLECTION STATUS</small><b id="hqCollectionProgress">0 / 0 ITEMS SECURED</b><p>Purchased gear is stored in the Locker. Boss and secret rewards are displayed here.</p></div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer class="hq-footer">
+          <span id="lastResult">All headquarters systems nominal.</span>
+          <span class="support-disclaimer"><b>Mobile support is experimental.</b> PC with a keyboard is the recommended experience.</span>
+        </footer>
       </div>
 
       <div id="classSelectPanel">
@@ -3731,7 +3791,7 @@ button:active { transform: translateY(0); }
           <div class="pause-actions">
             <button id="resumeGameBtn">Resume</button>
             <button id="restartRunBtn" class="secondary-btn">Restart Run</button>
-            <button id="pauseMenuBtn" class="secondary-btn">Return to Main Menu</button>
+            <button id="pauseMenuBtn" class="secondary-btn">Return to Headquarters</button>
           </div>
           <div class="pause-hint">Press P or Escape to resume</div>
         </div>
@@ -3753,7 +3813,7 @@ button:active { transform: translateY(0); }
           <div class="death-actions">
             <button id="deathRetryBtn">Retry as Current Class</button>
             <button id="deathClassBtn" class="secondary-btn">Choose Another Class</button>
-            <button id="deathMenuBtn" class="secondary-btn">Return to Main Menu</button>
+            <button id="deathMenuBtn" class="secondary-btn">Return to Headquarters</button>
           </div>
         </div>
       </div>
@@ -3792,7 +3852,7 @@ button:active { transform: translateY(0); }
           </div>
           <div class="menu-actions">
             <button id="secretRematchBtn">Rematch</button>
-            <button id="secretMenuBtn" class="secondary-btn">Return to Menu</button>
+            <button id="secretMenuBtn" class="secondary-btn">Return to Headquarters</button>
           </div>
         </div>
       </div>
@@ -3817,11 +3877,56 @@ button:active { transform: translateY(0); }
           </div>
           <div class="menu-actions">
             <button id="secretRetryBtn">Retry Fight</button>
-            <button id="secretDefeatReturnBtn" class="secondary-btn">Return to Menu</button>
+            <button id="secretDefeatReturnBtn" class="secondary-btn">Return to Headquarters</button>
           </div>
         </div>
       </div>
 
+
+
+      <div id="lockerPanel">
+        <div class="shop-shell locker-shell">
+          <div class="shop-topbar">
+            <div class="shop-title-wrap">
+              <div class="label">Headquarters Storage</div>
+              <h2>Locker</h2>
+              <div class="shop-tagline">Every cosmetic you own is stored here. Select an item to equip it immediately.</div>
+            </div>
+            <button id="lockerExitBtn" class="shop-exit" aria-label="Exit locker">×</button>
+          </div>
+          <div class="locker-summary">
+            <div><small>ITEMS SECURED</small><b id="lockerOwnedCount">0 / 0</b></div>
+            <div><small>ACTIVE BUILD</small><b id="lockerBuildName">Core Runner</b></div>
+            <div><small>NEON COINS</small><b>✦ <span id="lockerCoinCount">0</span></b></div>
+          </div>
+          <div class="shop-sections locker-sections">
+            <div class="cosmetic-section">
+              <div class="section-head"><h3>Core Skins</h3><span>Owned reactor finishes</span></div>
+              <div class="cosmetic-grid" id="lockerSkinGrid"></div>
+            </div>
+            <div class="cosmetic-section">
+              <div class="section-head"><h3>Frames</h3><span>Owned core silhouettes</span></div>
+              <div class="cosmetic-grid" id="lockerShapeGrid"></div>
+            </div>
+            <div class="cosmetic-section">
+              <div class="section-head"><h3>Dash Trails</h3><span>Owned movement effects</span></div>
+              <div class="cosmetic-grid" id="lockerTrailGrid"></div>
+            </div>
+            <div class="cosmetic-section">
+              <div class="section-head"><h3>Orb Skins</h3><span>Owned collectible styles</span></div>
+              <div class="cosmetic-grid" id="lockerOrbGrid"></div>
+            </div>
+            <div class="cosmetic-section">
+              <div class="section-head"><h3>Auras</h3><span>Owned external energy fields</span></div>
+              <div class="cosmetic-grid" id="lockerAuraGrid"></div>
+            </div>
+          </div>
+          <div class="shop-footer locker-footer">
+            <span>Only owned items appear here. Visit the Neon Market to expand your locker.</span>
+            <button id="lockerBackBtn" class="secondary-btn">Return to Headquarters</button>
+          </div>
+        </div>
+      </div>
 
       <div id="collectablesPanel">
         <div class="shop-shell collectables-shell">
@@ -3846,7 +3951,7 @@ button:active { transform: translateY(0); }
           </div>
           <div class="shop-footer">
             <span>Locked collectables show exactly how to earn them.</span>
-            <button id="collectablesBackBtn" class="secondary-btn">Back to Menu</button>
+            <button id="collectablesBackBtn" class="secondary-btn">Back to Headquarters</button>
           </div>
         </div>
       </div>
@@ -4137,6 +4242,20 @@ button:active { transform: translateY(0); }
   const liveUpgradeGrid = document.getElementById("liveUpgradeGrid");
   const cosmeticsPanel = document.getElementById("cosmeticsPanel");
   const cosmeticsBtn = document.getElementById("cosmeticsBtn");
+  const lockerBtn = document.getElementById("lockerBtn");
+  const lockerPanel = document.getElementById("lockerPanel");
+  const lockerExitBtn = document.getElementById("lockerExitBtn");
+  const lockerBackBtn = document.getElementById("lockerBackBtn");
+  const lockerOwnedCount = document.getElementById("lockerOwnedCount");
+  const lockerBuildName = document.getElementById("lockerBuildName");
+  const lockerCoinCount = document.getElementById("lockerCoinCount");
+  const lockerSkinGrid = document.getElementById("lockerSkinGrid");
+  const lockerShapeGrid = document.getElementById("lockerShapeGrid");
+  const lockerTrailGrid = document.getElementById("lockerTrailGrid");
+  const lockerOrbGrid = document.getElementById("lockerOrbGrid");
+  const lockerAuraGrid = document.getElementById("lockerAuraGrid");
+  const hqShip = document.getElementById("hqShip");
+  const hqOpenCollectables = document.getElementById("hqOpenCollectables");
   const collectablesBtn = document.getElementById("collectablesBtn");
   const collectablesPanel = document.getElementById("collectablesPanel");
   const collectablesExitBtn = document.getElementById("collectablesExitBtn");
@@ -4711,6 +4830,7 @@ button:active { transform: translateY(0); }
     classHudName.textContent = activeClassName;
     classHudBadge.style.setProperty("--hud-class-hue", classDef.hue);
     pauseClassSummary.textContent = `${classDef.icon} ${activeClassName} — ${classDef.passiveName}`;
+    updateHeadquarters();
   }
 
   function renderClassSelect() {
@@ -5237,8 +5357,122 @@ button:active { transform: translateY(0); }
     });
   }
 
+  function renderLockerCategory({ items, grid, ownedList, selectedId, category, onEquip }) {
+    grid.innerHTML = "";
+    const ownedItems = items.filter(item => ownedList.includes(item.id));
+    if (!ownedItems.length) {
+      grid.innerHTML = '<div class="locker-empty">No items secured in this category yet.</div>';
+      return;
+    }
+    ownedItems.forEach(item => {
+      const selected = selectedId() === item.id;
+      const card = document.createElement("button");
+      card.className = `cosmetic-card locker-card${selected ? " selected" : ""}`;
+      card.innerHTML = `
+        ${makePreview(item, category)}
+        <div class="cosmetic-info">
+          <strong>${item.name}</strong>
+          <p>${item.desc || (item.special ? item.special : "Stored in headquarters.")}</p>
+          <div class="cosmetic-meta">
+            <span class="status-pill">${selected ? "Equipped" : "Owned"}</span>
+            <span class="buy-mini secondary-btn">${selected ? "Active" : "Equip"}</span>
+          </div>
+        </div>`;
+      card.onclick = () => {
+        onEquip(item.id);
+        saveCosmetics();
+        renderLocker();
+        updateHeadquarters();
+        beep(670, .08, "triangle", .03);
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function getCollectionTotals() {
+    const groups = [
+      [skins, ownedSkins], [shapes, ownedShapes], [trails, ownedTrails],
+      [orbSkins, ownedOrbSkins], [auras, ownedAuras]
+    ];
+    return groups.reduce((acc, [items, owned]) => {
+      acc.total += items.length;
+      acc.owned += items.filter(item => owned.includes(item.id)).length;
+      return acc;
+    }, { owned: 0, total: 0 });
+  }
+
+  function renderLocker() {
+    const totals = getCollectionTotals();
+    const activeClass = getCharacterClass();
+    lockerOwnedCount.textContent = `${totals.owned} / ${totals.total}`;
+    lockerCoinCount.textContent = coins.toLocaleString();
+    lockerBuildName.textContent = activeClass.id === "custom" ? customBuildCurrentName : activeClass.name;
+    renderLockerCategory({ items: skins, grid: lockerSkinGrid, ownedList: ownedSkins, selectedId: () => selectedSkin, category: "skin", onEquip: id => selectedSkin = id });
+    renderLockerCategory({ items: shapes, grid: lockerShapeGrid, ownedList: ownedShapes, selectedId: () => selectedShape, category: "shape", onEquip: id => selectedShape = id });
+    renderLockerCategory({ items: trails, grid: lockerTrailGrid, ownedList: ownedTrails, selectedId: () => selectedTrail, category: "trail", onEquip: id => selectedTrail = id });
+    renderLockerCategory({ items: orbSkins, grid: lockerOrbGrid, ownedList: ownedOrbSkins, selectedId: () => selectedOrbSkin, category: "orb", onEquip: id => selectedOrbSkin = id });
+    renderLockerCategory({ items: auras, grid: lockerAuraGrid, ownedList: ownedAuras, selectedId: () => selectedAura, category: "aura", onEquip: id => selectedAura = id });
+  }
+
+  function updateHeadquarters() {
+    const activeClass = getCharacterClass();
+    const activeName = activeClass.id === "custom" ? customBuildCurrentName : activeClass.name;
+    const skin = getSkin();
+    const shape = getShape();
+    const trail = getTrail();
+    const aura = getAura();
+    const totals = getCollectionTotals();
+    const percent = totals.total ? Math.round(totals.owned / totals.total * 100) : 0;
+
+    const hqCoins = document.getElementById("hqCoins");
+    const hqBest = document.getElementById("hqBest");
+    const hqBuildName = document.getElementById("hqBuildName");
+    const hqSkinName = document.getElementById("hqSkinName");
+    const hqShapeName = document.getElementById("hqShapeName");
+    const hqTrailName = document.getElementById("hqTrailName");
+    const hqAuraName = document.getElementById("hqAuraName");
+    const hqShipCore = document.getElementById("hqShipCore");
+    const hqCollectionProgress = document.getElementById("hqCollectionProgress");
+    const hqCollectionPercent = document.getElementById("hqCollectionPercent");
+    const shelf = document.getElementById("hqCollectibleShelf");
+
+    if (hqCoins) hqCoins.textContent = coins.toLocaleString();
+    if (hqBest) hqBest.textContent = best.toLocaleString();
+    if (hqBuildName) hqBuildName.textContent = activeName;
+    if (hqSkinName) hqSkinName.textContent = skin.name;
+    if (hqShapeName) hqShapeName.textContent = shape.name;
+    if (hqTrailName) hqTrailName.textContent = trail.name;
+    if (hqAuraName) hqAuraName.textContent = aura.name;
+    if (hqCollectionProgress) hqCollectionProgress.textContent = `${totals.owned} / ${totals.total} ITEMS SECURED`;
+    if (hqCollectionPercent) hqCollectionPercent.textContent = `${percent}%`;
+
+    const shapeIcons = { star:"✦", diamond:"◆", orb:"●", cube:"■", arrow:"▲", crown:"♛" };
+    if (hqShipCore) hqShipCore.textContent = shapeIcons[shape.kind] || "✦";
+    if (hqShip) {
+      hqShip.style.setProperty("--ship-core", skin.color);
+      hqShip.style.setProperty("--ship-glow", skin.glow);
+    }
+
+    if (shelf) {
+      const featured = [
+        { name:"Overlord Core", icon:"♛", unlocked:ownedSkins.includes("overlord"), note:"FIRST BOSS" },
+        { name:"Architect Halo", icon:"⌬", unlocked:ownedAuras.includes("architect"), note:"SECRET BOSS" },
+        { name:"Neon Ascension", icon:"✦", unlocked:neonAscended && isSkillTreeMaxed(), note:"SKILL WEB" },
+        { name:"All Market Gear", icon:"◆", unlocked:allStandardCosmeticsOwned(), note:"COLLECTION" }
+      ];
+      shelf.innerHTML = featured.map(item => `
+        <button class="hq-trophy${item.unlocked ? " unlocked" : " locked"}" data-trophy-open="true">
+          <span>${item.unlocked ? item.icon : "?"}</span>
+          <b>${item.unlocked ? item.name : "Encrypted"}</b>
+          <small>${item.note}</small>
+        </button>`).join("");
+      shelf.querySelectorAll("[data-trophy-open]").forEach(button => button.onclick = () => collectablesBtn.click());
+    }
+  }
+
   function renderCosmetics() {
     coinCount.textContent = coins.toLocaleString();
+    updateHeadquarters();
     renderShopCategory({ items: skins, grid: skinGrid, ownedList: ownedSkins, selectedId: () => selectedSkin, category: 'skin', onEquip: id => selectedSkin = id });
     renderShopCategory({ items: shapes, grid: shapeGrid, ownedList: ownedShapes, selectedId: () => selectedShape, category: 'shape', onEquip: id => selectedShape = id });
     renderShopCategory({ items: trails, grid: trailGrid, ownedList: ownedTrails, selectedId: () => selectedTrail, category: 'trail', onEquip: id => selectedTrail = id });
@@ -6175,6 +6409,7 @@ button:active { transform: translateY(0); }
     secretVictoryPanel.style.display = "none";
     secretDefeatPanel.style.display = "none";
     cosmeticsPanel.style.display = "none";
+    lockerPanel.style.display = "none";
     collectablesPanel.style.display = "none";
     skillTreePanel.style.display = "none";
     classSelectPanel.style.display = "none";
@@ -6226,7 +6461,7 @@ button:active { transform: translateY(0); }
     menu.classList.remove("shop-mode");
     overlay.style.display = "grid";
     startBtn.textContent = "Start Run";
-    lastResult.textContent = "Run paused and returned to the main menu.";
+    lastResult.textContent = "Run paused and returned to headquarters.";
   }
 
   function resetGame() {
@@ -7806,6 +8041,18 @@ button:active { transform: translateY(0); }
     }
   });
 
+  lockerBtn.addEventListener("click", () => {
+    liveUpgradePanel.classList.remove("show");
+    hideAllMenuPanels();
+    menu.classList.add("shop-mode");
+    lockerPanel.style.display = "block";
+    overlay.style.display = "grid";
+    renderLocker();
+  });
+
+  hqShip.addEventListener("click", () => openClassSelect("normal", "start"));
+  hqOpenCollectables.addEventListener("click", () => collectablesBtn.click());
+
   cosmeticsBtn.addEventListener("click", () => {
     liveUpgradePanel.classList.remove("show");
     menu.classList.add("shop-mode");
@@ -7813,6 +8060,7 @@ button:active { transform: translateY(0); }
     upgradePanel.style.display = "none";
     skillTreePanel.style.display = "none";
     collectablesPanel.style.display = "none";
+    lockerPanel.style.display = "none";
     cosmeticsPanel.style.display = "block";
     renderCosmetics();
   });
@@ -7824,6 +8072,7 @@ button:active { transform: translateY(0); }
     startPanel.style.display = "none";
     upgradePanel.style.display = "none";
     cosmeticsPanel.style.display = "none";
+    lockerPanel.style.display = "none";
     skillTreePanel.style.display = "none";
     collectablesPanel.style.display = "block";
     renderCollectables();
@@ -7835,6 +8084,7 @@ button:active { transform: translateY(0); }
     startPanel.style.display = "none";
     upgradePanel.style.display = "none";
     cosmeticsPanel.style.display = "none";
+    lockerPanel.style.display = "none";
     collectablesPanel.style.display = "none";
     skillTreePanel.style.display = "block";
     renderSkillTree();
@@ -7843,13 +8093,17 @@ button:active { transform: translateY(0); }
   function exitShop() {
     menu.classList.remove("shop-mode");
     cosmeticsPanel.style.display = "none";
+    lockerPanel.style.display = "none";
     collectablesPanel.style.display = "none";
     skillTreePanel.style.display = "none";
     startPanel.style.display = "block";
+    updateHeadquarters();
   }
 
   backBtn.addEventListener("click", exitShop);
   shopExitBtn.addEventListener("click", exitShop);
+  lockerExitBtn.addEventListener("click", exitShop);
+  lockerBackBtn.addEventListener("click", exitShop);
   collectablesExitBtn.addEventListener("click", exitShop);
   collectablesBackBtn.addEventListener("click", exitShop);
   closeTreeBtn.addEventListener("click", exitShop);
@@ -7914,8 +8168,10 @@ button:active { transform: translateY(0); }
   previewClassId = selectedClassId;
   updateClassHud();
   renderCosmetics();
+  renderLocker();
   renderCollectables();
   renderSkillTree();
+  updateHeadquarters();
   refreshSecretBossUnlock(false);
   setupDebugMenu();
   requestAnimationFrame(loop);
@@ -7926,7 +8182,7 @@ button:active { transform: translateY(0); }
 </script>
 
 <script>
-/* Keep full-screen title styling limited to the actual main menu. */
+/* Keep full-screen title styling limited to the actual headquarters. */
 (() => {
   const menuEl = document.getElementById('menu');
   const startEl = document.getElementById('startPanel');
@@ -8040,7 +8296,7 @@ button:active { transform: translateY(0); }
 
   const panelIds = [
     'classSelectPanel','pausePanel','deathPanel','victoryPanel',
-    'secretVictoryPanel','secretDefeatPanel','cosmeticsPanel',
+    'secretVictoryPanel','secretDefeatPanel','cosmeticsPanel','lockerPanel',
     'collectablesPanel','skillTreePanel','upgradePanel'
   ];
 
@@ -8146,6 +8402,7 @@ button:active { transform: translateY(0); }
 }
 
 #menu:not(.main-menu-mode) > #cosmeticsPanel,
+#menu:not(.main-menu-mode) > #lockerPanel,
 #menu:not(.main-menu-mode) > #collectablesPanel,
 #menu:not(.main-menu-mode) > #skillTreePanel,
 #menu:not(.main-menu-mode) > #classSelectPanel {
@@ -8533,6 +8790,245 @@ button:active { transform: translateY(0); }
   .tutorial-window { padding: 20px !important; text-align: left !important; }
   .tutorial-window h2 { font-size: 28px !important; }
   .mobile-disclaimer-card { border-radius: 2px !important; }
+}
+</style>
+
+
+<style id="headquarters-overhaul">
+/* =========================================================
+   ZELQIRATH HEADQUARTERS
+   Replaces the old menu with an explorable command deck.
+   ========================================================= */
+#menu.main-menu-mode {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #030609 !important;
+}
+#menu.main-menu-mode::before,
+#menu.main-menu-mode::after { display: none !important; }
+
+#menu.main-menu-mode #startPanel.hq-screen::before { display:none !important; content:none !important; }
+#menu.main-menu-mode .hq-footer #lastResult { position:static !important; inset:auto !important; margin:0 !important; }
+#menu.main-menu-mode #startPanel.hq-screen {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  column-gap: 0 !important;
+  align-content: stretch !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: clamp(16px, 2.2vw, 30px);
+  padding-top: max(clamp(16px, 2.2vw, 30px), env(safe-area-inset-top));
+  padding-right: max(clamp(16px, 2.2vw, 30px), env(safe-area-inset-right));
+  padding-bottom: max(clamp(16px, 2.2vw, 30px), env(safe-area-inset-bottom));
+  padding-left: max(clamp(16px, 2.2vw, 30px), env(safe-area-inset-left));
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(115,231,225,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(115,231,225,.028) 1px, transparent 1px),
+    radial-gradient(circle at 37% 34%, rgba(40,118,130,.18), transparent 29%),
+    radial-gradient(circle at 82% 80%, rgba(125,48,79,.13), transparent 25%),
+    #03070a;
+  background-size: 42px 42px, 42px 42px, auto, auto, auto;
+  color: #edf7f6;
+  touch-action: pan-y;
+}
+.hq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid rgba(115,231,225,.2);
+}
+.hq-brand { display:flex; align-items:center; gap:14px; min-width:0; }
+.hq-brand-mark {
+  display:grid; place-items:center; width:48px; height:48px;
+  border:1px solid rgba(115,231,225,.5); color:#73e7e1;
+  font:900 14px/1 ui-monospace, monospace; letter-spacing:.1em;
+  clip-path: polygon(0 0, 82% 0, 100% 18%, 100% 100%, 18% 100%, 0 82%);
+  background:rgba(115,231,225,.07);
+}
+.hq-brand small,.hq-module small,.hq-footer,.hq-resource-strip small,.hq-loadout-strip small,.locker-summary small {
+  color:#7f9599; font:800 9px/1.2 ui-monospace,monospace; letter-spacing:.16em;
+}
+#menu.main-menu-mode .hq-brand h1 {
+  margin:3px 0 0 !important; padding:0 !important; font:900 clamp(19px,2.1vw,31px)/1 ui-monospace,monospace !important;
+  letter-spacing:.055em !important; color:#edf7f6 !important; text-shadow:none !important;
+}
+#menu.main-menu-mode .hq-brand h1::after { display:none !important; }
+.hq-resource-strip { display:flex; align-items:stretch; border:1px solid rgba(115,231,225,.18); background:#071016; }
+.hq-resource-strip > div { min-width:112px; padding:10px 14px; border-left:1px solid rgba(115,231,225,.13); }
+.hq-resource-strip > div:first-child { border-left:0; }
+.hq-resource-strip b { display:block; margin-top:5px; color:#dff8f6; font:900 13px/1 ui-monospace,monospace; white-space:nowrap; max-width:180px; overflow:hidden; text-overflow:ellipsis; }
+.hq-grid {
+  min-height:0; display:grid; grid-template-columns:minmax(0,1.55fr) minmax(340px,.8fr);
+  grid-template-rows:minmax(0,1fr) auto; gap:14px; padding:14px 0;
+}
+.hq-module { position:relative; min-width:0; border:1px solid rgba(115,231,225,.19); background:rgba(6,13,18,.93); overflow:hidden; }
+.hq-module::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(135deg,rgba(115,231,225,.035),transparent 34%); }
+.hq-module-head { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 16px; border-bottom:1px solid rgba(115,231,225,.14); background:rgba(255,255,255,.012); }
+.hq-module-head h2 { margin:3px 0 0; font:900 15px/1 ui-monospace,monospace; letter-spacing:.11em; color:#e8f5f4; }
+.hq-online,.hq-station-count { color:#73e7e1; font:800 9px/1 ui-monospace,monospace; letter-spacing:.12em; }
+.hq-online i { display:inline-block; width:7px; height:7px; margin-right:6px; border-radius:50%; background:#73e7e1; box-shadow:0 0 10px #73e7e1; animation:hqBlink 1.6s ease-in-out infinite; }
+@keyframes hqBlink { 50% { opacity:.35; } }
+.hq-hangar { display:grid; grid-template-rows:auto minmax(180px,1fr) auto auto; }
+.hq-hangar-stage { position:relative; min-height:0; overflow:hidden; background:radial-gradient(ellipse at 50% 58%,rgba(61,140,151,.17),transparent 48%),linear-gradient(#050b10,#07131a); }
+.hq-hangar-stage::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(90deg,transparent 0 14.2%,rgba(115,231,225,.055) 14.3%,transparent 14.5%),linear-gradient(transparent 65%,rgba(115,231,225,.055)); }
+.hq-flight-lines { position:absolute; left:50%; bottom:-8%; width:70%; height:65%; transform:translateX(-50%); clip-path:polygon(35% 0,65% 0,100% 100%,0 100%); background:repeating-linear-gradient(90deg,transparent 0 10%,rgba(115,231,225,.1) 10.2%,transparent 10.5%); opacity:.8; }
+.hq-deck-markings { position:absolute; inset:auto 8% 9%; display:flex; justify-content:space-between; color:rgba(115,231,225,.22); font:900 clamp(24px,4vw,62px)/1 ui-monospace,monospace; }
+.hq-ship-shadow { position:absolute; left:50%; top:63%; width:42%; height:10%; transform:translate(-50%,-50%); background:radial-gradient(ellipse,rgba(0,0,0,.75),transparent 70%); filter:blur(8px); }
+#menu.main-menu-mode .hq-ship {
+  --ship-core:#dffcff; --ship-glow:#45f3ff;
+  position:absolute !important; z-index:3 !important; left:50%; top:50%; width:min(38vw,430px); aspect-ratio:1.55;
+  transform:translate(-50%,-50%); min-height:0 !important; padding:0 !important; border:0 !important; background:transparent !important; box-shadow:none !important;
+  animation:hqShipFloat 3.2s ease-in-out infinite; cursor:pointer;
+}
+#menu.main-menu-mode .hq-ship:hover { transform:translate(-50%,-52%) scale(1.025); }
+@keyframes hqShipFloat { 50% { margin-top:-8px; } }
+.hq-ship-body { position:absolute; left:27%; top:10%; width:46%; height:72%; clip-path:polygon(50% 0,76% 25%,88% 82%,50% 100%,12% 82%,24% 25%); background:linear-gradient(90deg,#15252c,#486069 48%,#17262c); border:1px solid rgba(220,255,255,.5); filter:drop-shadow(0 0 14px rgba(115,231,225,.2)); }
+.hq-ship-body::before { content:""; position:absolute; inset:8% 20%; clip-path:polygon(50% 0,77% 32%,66% 90%,34% 90%,23% 32%); background:linear-gradient(#1e3945,#071016); }
+.hq-ship-wing { position:absolute; top:42%; width:39%; height:39%; background:linear-gradient(#263a42,#0b151b); border:1px solid rgba(170,220,222,.25); }
+.hq-ship-wing.left { left:7%; clip-path:polygon(100% 0,100% 70%,0 100%,20% 36%); }
+.hq-ship-wing.right { right:7%; clip-path:polygon(0 0,0 70%,100% 100%,80% 36%); }
+.hq-ship-core { position:absolute; z-index:3; left:50%; top:46%; transform:translate(-50%,-50%); color:var(--ship-core); font-size:clamp(22px,3vw,40px); text-shadow:0 0 9px var(--ship-glow),0 0 24px var(--ship-glow); }
+.hq-ship-cockpit { position:absolute; left:40%; top:13%; width:20%; height:25%; border-radius:50% 50% 35% 35%; background:linear-gradient(#8ce7e9,#17343e); box-shadow:0 0 15px rgba(115,231,225,.35); }
+.hq-ship-engine { position:absolute; z-index:4; top:72%; width:9%; height:28%; border-radius:50%; background:linear-gradient(var(--ship-glow),transparent); filter:blur(2px); box-shadow:0 0 20px var(--ship-glow); animation:hqEngine .14s alternate infinite; }
+.hq-ship-engine.one { left:37%; } .hq-ship-engine.two { right:37%; }
+@keyframes hqEngine { to { height:34%; opacity:.65; } }
+.hq-loadout-strip { position:relative; z-index:2; display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid rgba(115,231,225,.14); border-bottom:1px solid rgba(115,231,225,.14); }
+.hq-loadout-strip > div { padding:10px 12px; border-left:1px solid rgba(115,231,225,.1); min-width:0; }
+.hq-loadout-strip > div:first-child { border-left:0; }
+.hq-loadout-strip b { display:block; margin-top:4px; color:#d8e8e8; font:800 11px/1 ui-monospace,monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#menu.main-menu-mode .hq-launch-btn { position:relative; z-index:3; display:flex !important; align-items:center; justify-content:space-between; gap:20px; width:100%; min-height:64px !important; padding:13px 18px !important; border:0 !important; border-left:4px solid #73e7e1 !important; border-radius:0 !important; background:linear-gradient(90deg,rgba(115,231,225,.21),rgba(115,231,225,.055)) !important; color:#efffff !important; box-shadow:none !important; text-align:left; }
+.hq-launch-btn span { font:900 16px/1 ui-monospace,monospace; letter-spacing:.13em; }
+.hq-launch-btn small { font-size:9px; }
+.hq-stations { display:grid; grid-template-rows:auto minmax(0,1fr); }
+.hq-station-grid { position:relative; z-index:2; min-height:0; padding:8px; display:flex; flex-direction:column; gap:6px; overflow:auto; scrollbar-width:thin; touch-action:pan-y; }
+#menu.main-menu-mode .hq-station { display:grid !important; grid-template-columns:42px minmax(0,1fr) auto; align-items:center; gap:10px; width:100%; min-height:58px !important; padding:9px 11px !important; border:1px solid rgba(115,231,225,.13) !important; border-radius:0 !important; background:#081117 !important; color:#dbe9e8 !important; box-shadow:none !important; text-align:left; }
+#menu.main-menu-mode .hq-station:hover { border-color:rgba(115,231,225,.45) !important; background:#0b1820 !important; transform:translateX(2px); }
+#menu.main-menu-mode .hq-station.primary { border-left:3px solid #73e7e1 !important; }
+#menu.main-menu-mode .hq-station.secret { border-color:rgba(217,95,105,.22) !important; }
+#menu.main-menu-mode .hq-station.secret.unlocked { border-color:rgba(217,95,105,.7) !important; box-shadow:inset 3px 0 #d95f69 !important; }
+.station-icon { display:grid; place-items:center; width:36px; height:36px; border:1px solid rgba(115,231,225,.25); color:#73e7e1; font:900 19px/1 monospace; }
+.hq-station b { display:block; font:900 11px/1.1 ui-monospace,monospace; letter-spacing:.1em; }
+.hq-station small { display:block; margin-top:5px; letter-spacing:.05em; }
+.hq-station em { color:#73e7e1; font:800 8px/1 ui-monospace,monospace; font-style:normal; letter-spacing:.14em; }
+.hq-collection { grid-column:1/-1; }
+.hq-text-btn { border:0 !important; padding:4px !important; min-height:0 !important; background:transparent !important; color:#73e7e1 !important; box-shadow:none !important; font:800 9px/1 ui-monospace,monospace !important; letter-spacing:.1em; }
+.hq-collection-body { position:relative; z-index:2; display:grid; grid-template-columns:minmax(0,1fr) minmax(290px,.38fr); gap:12px; padding:12px; }
+.hq-trophy-shelf { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+#menu.main-menu-mode .hq-trophy { display:grid !important; grid-template-columns:auto 1fr; grid-template-rows:auto auto; align-items:center; gap:3px 10px; min-height:76px !important; padding:10px !important; border:1px solid rgba(115,231,225,.14) !important; border-radius:0 !important; background:#071016 !important; box-shadow:none !important; color:#dce9e8 !important; text-align:left; }
+.hq-trophy > span { grid-row:1/3; display:grid; place-items:center; width:42px; height:42px; color:#73e7e1; border:1px solid rgba(115,231,225,.25); font-size:20px; }
+.hq-trophy b { font:800 10px/1 ui-monospace,monospace; letter-spacing:.08em; }
+.hq-trophy small { font-size:8px; }
+.hq-trophy.locked { opacity:.43; filter:grayscale(.7); }
+.hq-collection-status { display:grid; grid-template-columns:64px 1fr; align-items:center; gap:13px; padding:9px 12px; border-left:1px solid rgba(115,231,225,.13); }
+.hq-progress-ring { display:grid; place-items:center; width:58px; height:58px; border-radius:50%; border:3px solid rgba(115,231,225,.18); box-shadow:inset 0 0 0 3px rgba(115,231,225,.05); color:#73e7e1; }
+.hq-progress-ring span { font:900 12px/1 ui-monospace,monospace; }
+.hq-collection-status b { display:block; margin-top:5px; font:900 11px/1 ui-monospace,monospace; }
+.hq-collection-status p { margin:6px 0 0; color:#71868b; font-size:10px; line-height:1.35; }
+.hq-footer { display:flex; justify-content:space-between; gap:18px; padding-top:10px; border-top:1px solid rgba(115,231,225,.16); white-space:nowrap; overflow:hidden; }
+.hq-footer > span { overflow:hidden; text-overflow:ellipsis; }
+.hq-footer .support-disclaimer { display:none; }
+html.mobile-device .hq-footer .support-disclaimer { display:block; }
+
+/* Locker screen participates in the same full-screen panel system. */
+#menu:not(.main-menu-mode) > #lockerPanel { display:none; position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; padding:var(--panel-pad-y) var(--panel-pad-x) !important; overflow:hidden !important; }
+#menu:not(.main-menu-mode) > #lockerPanel[style*="display: block"] { display:block !important; }
+#menu:not(.main-menu-mode) .locker-shell { width:100% !important; height:100% !important; min-height:0 !important; display:grid !important; grid-template-rows:auto auto minmax(0,1fr) auto !important; overflow:hidden !important; }
+.locker-summary { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:1px solid rgba(115,231,225,.14); background:#071016; }
+.locker-summary > div { padding:12px 16px; border-left:1px solid rgba(115,231,225,.12); }
+.locker-summary > div:first-child { border-left:0; }
+.locker-summary b { display:block; margin-top:5px; color:#e7f4f3; font:900 13px/1 ui-monospace,monospace; }
+#menu:not(.main-menu-mode) .locker-sections { min-height:0 !important; overflow-y:auto !important; touch-action:pan-y !important; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+.locker-card.selected { border-color:rgba(115,231,225,.8) !important; box-shadow:inset 3px 0 #73e7e1 !important; }
+.locker-empty { grid-column:1/-1; padding:24px; border:1px dashed rgba(115,231,225,.18); color:#71868b; font:800 10px/1.4 ui-monospace,monospace; text-align:center; }
+
+@media (max-width: 900px), (pointer: coarse) {
+  #menu.main-menu-mode { overflow:auto !important; }
+  #menu.main-menu-mode #startPanel.hq-screen { height:auto; min-height:100dvh; overflow-y:auto; display:block; }
+  .hq-header { align-items:flex-start; }
+  .hq-resource-strip > div { min-width:0; padding:9px; }
+  .hq-resource-strip { width:100%; }
+  .hq-grid { display:flex; flex-direction:column; min-height:auto; }
+  .hq-hangar { min-height:480px; }
+  .hq-hangar-stage { min-height:270px; }
+  #menu.main-menu-mode .hq-ship { width:min(72vw,390px); }
+  .hq-station-grid { overflow:visible; }
+  .hq-collection-body { grid-template-columns:1fr; }
+  .hq-collection-status { border-left:0; border-top:1px solid rgba(115,231,225,.13); }
+  #menu:not(.main-menu-mode) > #lockerPanel { padding:0 !important; }
+  #menu:not(.main-menu-mode) .locker-shell { border:0 !important; }
+}
+@media (max-width: 640px) {
+  .hq-header { display:block; }
+  .hq-brand-mark { width:40px; height:40px; }
+  #menu.main-menu-mode .hq-brand h1 { font-size:16px !important; }
+  .hq-resource-strip { margin-top:12px; display:grid; grid-template-columns:repeat(3,1fr); }
+  .hq-resource-strip > div { border-left:1px solid rgba(115,231,225,.13); }
+  .hq-resource-strip b { font-size:10px; }
+  .hq-hangar { min-height:430px; }
+  .hq-hangar-stage { min-height:220px; }
+  .hq-loadout-strip { grid-template-columns:repeat(2,1fr); }
+  .hq-loadout-strip > div:nth-child(3) { border-top:1px solid rgba(115,231,225,.1); border-left:0; }
+  .hq-loadout-strip > div:nth-child(4) { border-top:1px solid rgba(115,231,225,.1); }
+  #menu.main-menu-mode .hq-launch-btn { display:block !important; }
+  .hq-launch-btn small { display:block; margin-top:7px; }
+  .hq-trophy-shelf { grid-template-columns:repeat(2,1fr); }
+  .hq-collection-status { grid-template-columns:54px 1fr; }
+  .hq-progress-ring { width:50px; height:50px; }
+  .hq-footer { display:block; white-space:normal; line-height:1.45; }
+  .hq-footer .support-disclaimer { margin-top:6px; }
+  .locker-summary { grid-template-columns:1fr 1fr; }
+  .locker-summary > div:last-child { grid-column:1/-1; border-top:1px solid rgba(115,231,225,.12); border-left:0; }
+}
+@media (max-height: 720px) and (min-width: 700px) {
+  .hq-grid { grid-template-rows:minmax(0,1fr); }
+  .hq-collection { display:none; }
+  .hq-hangar-stage { min-height:140px; }
+}
+</style>
+
+
+<style id="headquarters-visibility-fix">
+/* Hard visibility guard: inline navigation state always wins over legacy panel CSS. */
+#lockerPanel { display: none; }
+#menu.main-menu-mode #startPanel.hq-screen[style*="display: none"],
+#startPanel[style*="display: none"],
+#classSelectPanel[style*="display: none"],
+#pausePanel[style*="display: none"],
+#deathPanel[style*="display: none"],
+#victoryPanel[style*="display: none"],
+#secretVictoryPanel[style*="display: none"],
+#secretDefeatPanel[style*="display: none"],
+#cosmeticsPanel[style*="display: none"],
+#lockerPanel[style*="display: none"],
+#collectablesPanel[style*="display: none"],
+#skillTreePanel[style*="display: none"],
+#upgradePanel[style*="display: none"] { display: none !important; }
+#menu.main-menu-mode #startPanel.hq-screen:not([style*="display: none"]) { display: grid !important; }
+#lockerPanel[style*="display: block"] { display: block !important; }
+@media (max-width: 900px), (pointer: coarse) {
+  #menu.main-menu-mode #startPanel.hq-screen:not([style*="display: none"]) {
+    display: block !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+  }
+  #menu.main-menu-mode .hq-stations { display: block !important; overflow: hidden !important; }
+  #menu.main-menu-mode .hq-station-grid { max-height: none !important; overflow: visible !important; }
 }
 </style>
 
