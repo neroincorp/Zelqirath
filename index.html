@@ -507,6 +507,76 @@
     }
 
 
+    .support-disclaimer {
+      margin: 14px auto 16px;
+      max-width: 610px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      text-align: left;
+      background: rgba(255, 180, 70, .09);
+      border: 1px solid rgba(255, 190, 85, .28);
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .support-disclaimer b {
+      display: block;
+      margin-bottom: 4px;
+      color: #ffd27a;
+      font-size: 13px;
+      letter-spacing: .02em;
+    }
+
+    #mobileDisclaimer {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: none;
+      place-items: center;
+      padding: max(20px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+      background: rgba(2, 4, 13, .92);
+      backdrop-filter: blur(14px);
+    }
+
+    #mobileDisclaimer.show { display: grid; }
+
+    .mobile-disclaimer-card {
+      width: min(520px, 100%);
+      padding: 26px 22px;
+      border-radius: 22px;
+      text-align: center;
+      background: linear-gradient(160deg, rgba(25,31,67,.98), rgba(37,13,48,.98));
+      border: 1px solid rgba(255, 190, 85, .3);
+      box-shadow: 0 30px 100px rgba(0,0,0,.65);
+    }
+
+    .mobile-disclaimer-icon {
+      font-size: 46px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .mobile-disclaimer-card h2 {
+      margin: 4px 0 10px;
+      font-size: clamp(28px, 8vw, 40px);
+    }
+
+    .mobile-disclaimer-card p {
+      margin: 0 auto 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 440px;
+    }
+
+    .mobile-disclaimer-card strong { color: #ffd27a; }
+
+    .mobile-disclaimer-card button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px 18px;
+    }
+
     .menu-actions {
       display: flex;
       justify-content: center;
@@ -2944,11 +3014,26 @@
     <div><small>ACTIVE CLASS</small><b id="classHudName">Core Runner</b></div>
   </div>
 
+  <div id="mobileDisclaimer" role="dialog" aria-modal="true" aria-labelledby="mobileDisclaimerTitle">
+    <div class="mobile-disclaimer-card">
+      <div class="mobile-disclaimer-icon">⚠</div>
+      <div class="label">Experimental Support</div>
+      <h2 id="mobileDisclaimerTitle">Mobile May Be Buggy</h2>
+      <p>Zelqirath is primarily designed for PC. The mobile version is <strong>very buggy and barely supported</strong>, so some menus, controls, proportions, effects, or devices may not work correctly.</p>
+      <p>For the best and most reliable experience, use a PC with a keyboard.</p>
+      <button id="mobileDisclaimerContinue">Continue on Mobile</button>
+    </div>
+  </div>
+
   <div id="overlay">
     <div id="menu">
       <div id="startPanel">
         <h1>ZELQIRATH</h1>
         <p class="subtitle">Grab energy orbs, chain huge combos, dodge hunters, and choose a power-up every level. The arena keeps getting faster.</p>
+        <div class="support-disclaimer">
+          <b>Mobile Support Notice</b>
+          The mobile version is experimental, very buggy, and only barely supported. Controls, menus, performance, and screen sizing may not work correctly on every phone. For the intended and most reliable experience, play Zelqirath on a PC with a keyboard.
+        </div>
         <div class="instructions">
           <div class="instruction"><b>WASD / Joystick</b>Move</div>
           <div class="instruction"><b>Space</b>Dash through danger</div>
@@ -3386,6 +3471,8 @@
   const restartRunBtn = document.getElementById("restartRunBtn");
   const pauseMenuBtn = document.getElementById("pauseMenuBtn");
   const startPanel = document.getElementById("startPanel");
+  const mobileDisclaimer = document.getElementById("mobileDisclaimer");
+  const mobileDisclaimerContinue = document.getElementById("mobileDisclaimerContinue");
   const upgradePanel = document.getElementById("upgradePanel");
   const upgradeGrid = document.getElementById("upgradeGrid");
   const liveUpgradePanel = document.getElementById("liveUpgradePanel");
@@ -6427,6 +6514,24 @@
     }
     requestAnimationFrame(loop);
   }
+
+  function shouldShowMobileDisclaimer() {
+    return matchMedia("(pointer: coarse)").matches || Math.min(innerWidth, innerHeight) <= 820;
+  }
+
+  function openMobileDisclaimer() {
+    if (!mobileDisclaimer || !shouldShowMobileDisclaimer()) return;
+    if (sessionStorage.getItem("zelqirathMobileDisclaimerSeen") === "true") return;
+    mobileDisclaimer.classList.add("show");
+  }
+
+  function closeMobileDisclaimer() {
+    mobileDisclaimer.classList.remove("show");
+    sessionStorage.setItem("zelqirathMobileDisclaimerSeen", "true");
+  }
+
+  mobileDisclaimerContinue.addEventListener("click", closeMobileDisclaimer);
+  setTimeout(openMobileDisclaimer, 120);
 
   addEventListener("keydown", e => {
     const tag = document.activeElement?.tagName;
